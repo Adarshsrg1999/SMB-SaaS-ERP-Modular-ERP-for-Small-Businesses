@@ -10,6 +10,8 @@ npm install
 npm start
 ```
 
+**Note**: The database file `erp.db` is automatically created on the first run. It is ignored by Git to keep data local.
+
 ## API Endpoints
 
 ### Authentication

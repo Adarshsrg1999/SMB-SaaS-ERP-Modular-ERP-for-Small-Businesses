@@ -36,9 +36,10 @@ Streamline your path from "Interested" to "Paid".
 
 #### 🔒 Enterprise-Grade Security
 Built with security and hierarchy in mind.
-*   **Admin & Staff Roles**: Give your team the access they need without compromising sensitive settings.
-    *   **Admins**: Full control over users, settings, and all modules.
-    *   **Staff**: Focused access to day-to-day operations like sales and inventory.
+*   **Granular Role Management**: Define access precisely for your entire ecosystem.
+    *   **Admins**: Full control over system settings, user management (Staff, Customers, Vendors), and all modules.
+    *   **Staff**: Focused access to core operations like sales and inventory.
+    *   **External Users**: Dedicated accounts for Customers and Vendors (Platform-ready).
 *   **Secure Login**: Industry-standard encryption protects user accounts.
 
 ---
@@ -56,7 +57,7 @@ Built with security and hierarchy in mind.
 Built on a robust, modern technology stack ensuring speed and reliability:
 *   **Frontend**: React (Fast, responsive user interface)
 *   **Backend**: Node.js & Express (High-performance API)
-*   **Data**: SQLite (Reliable, local data storage)
+*   **Data**: SQLite (Reliable, local data storage. Zero-configuration setup suitable for small deployments.)
 
 ---
 

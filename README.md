@@ -66,8 +66,8 @@ npm run dev
 ## Project Structure
 
 *   **`client/`**: React frontend with a Dashboard layout and module pages.
-*   **`server/`**: Express API with modular routes (`routes/`) and SQLite database (`erp.db`).
-*   **`server/erp.db`**: Local SQLite database file.
+*   **`server/`**: Express API with modular routes (`routes/`) and SQLite database.
+*   **`server/erp.db`**: Local SQLite database file (Automatically created on first run, ignored by Git).
 
 ## Data and Metrics
 The **Dashboard** displays live data from the database, including:
