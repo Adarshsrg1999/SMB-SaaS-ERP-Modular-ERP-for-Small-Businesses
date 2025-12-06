@@ -48,4 +48,49 @@ describe('Dashboard API Endpoints', () => {
         expect(typeof res.body.salesToday).toBe('number');
         expect(typeof res.body.salesWeek).toBe('number');
     });
+
+    it('POST /api/dashboard/reset should reset database for admin', async () => {
+        const res = await request(app)
+            .post('/api/dashboard/reset')
+            .set('Authorization', `Bearer ${token}`);
+
+        expect(res.statusCode).toEqual(200);
+        expect(res.body).toHaveProperty('message');
+        expect(res.body.message).toContain('reset');
+    });
+
+    it('POST /api/dashboard/reset should fail without token', async () => {
+        const res = await request(app)
+            .post('/api/dashboard/reset');
+
+        expect(res.statusCode).toEqual(401);
+    });
+
+    it('POST /api/dashboard/reset should fail for non-admin users', async () => {
+        // Create a staff user
+        const staffEmail = `staff${Date.now()}@erp.com`;
+        await request(app)
+            .post('/api/auth/register')
+            .send({
+                name: 'Staff User',
+                email: staffEmail,
+                password: 'password123',
+                role: 'staff'
+            });
+
+        const loginRes = await request(app)
+            .post('/api/auth/login')
+            .send({
+                email: staffEmail,
+                password: 'password123'
+            });
+
+        const staffToken = loginRes.body.token;
+
+        const res = await request(app)
+            .post('/api/dashboard/reset')
+            .set('Authorization', `Bearer ${staffToken}`);
+
+        expect(res.statusCode).toEqual(403);
+    });
 });

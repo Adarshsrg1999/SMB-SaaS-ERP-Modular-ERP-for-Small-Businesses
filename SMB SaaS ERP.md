@@ -73,7 +73,7 @@ Built on a robust, modern technology stack ensuring speed and reliability:
     *   **Staggered Lists**: Dynamic entrances for list items.
 *   **Developer Experience**: Added `husky` git hooks for automated linting and testing.
 
-### Beta Features (v1.2 - In Development)
+### Beta Features (v1.2)
 *   **Advanced Administration**:
     *   **Admin Dashboard**: New dedicated area for system maintenance.
     *   **Database Reset**: One-click system reset for administrators to clear business data while preserving admin access.
