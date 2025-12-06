@@ -1,5 +1,4 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
 import { resetDatabase } from '../api';
 import ConfirmationModal from '../components/ConfirmationModal';
 
