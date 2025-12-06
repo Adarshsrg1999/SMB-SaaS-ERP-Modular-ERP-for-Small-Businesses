@@ -19,6 +19,7 @@ export default function DashboardLayout({ children, user, onLogout }) {
 
     if (user?.role === 'admin') {
         menuItems.push({ path: '/users', label: 'Users', icon: '👤' });
+        menuItems.push({ path: '/admin', label: 'Admin', icon: '⚙️' });
     }
 
     const currentPath = location.pathname;

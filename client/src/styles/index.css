@@ -16,7 +16,7 @@
   --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
   --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
-  
+
   --input-bg: #ffffff;
   --input-border: #e2e8f0;
   --input-focus: #2563eb;
@@ -27,7 +27,8 @@
   --primary: #3b82f6;
   --primary-dark: #60a5fa;
   --secondary: #94a3b8;
-  --accent: #f8fafc; /* Inverted for high contrast elements if needed */
+  --accent: #1e293b;
+  /* Fixed: Was white, causing invisible text in Sidebar */
   --background: #0f172a;
   --surface: #1e293b;
   --text: #f1f5f9;
@@ -36,11 +37,12 @@
   --success: #34d399;
   --danger: #f87171;
   --warning: #fbbf24;
-  
-  --input-bg: #1e293b;
+
+  --input-bg: #0f172a;
+  /* Slightly darker than surface for contrast */
   --input-border: #475569;
   --input-focus: #3b82f6;
-  
+
   --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.3), 0 1px 2px -1px rgb(0 0 0 / 0.3);
   --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.3), 0 4px 6px -4px rgb(0 0 0 / 0.3);
 }
@@ -77,13 +79,20 @@ button {
 }
 
 /* Typography utilities */
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   color: var(--text);
   line-height: 1.25;
 }
 
 /* Form elements */
-input, select, textarea {
+input,
+select,
+textarea {
   font-family: var(--font-sans);
   font-size: 0.95rem;
   padding: 0.6rem 0.75rem;
@@ -96,7 +105,9 @@ input, select, textarea {
   width: 100%;
 }
 
-input:focus, select:focus, textarea:focus {
+input:focus,
+select:focus,
+textarea:focus {
   border-color: var(--input-focus);
   box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
 }
@@ -115,6 +126,13 @@ label {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(5px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

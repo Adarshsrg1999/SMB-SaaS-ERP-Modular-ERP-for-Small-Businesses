@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { getDashboardMetrics } from '../api';
 
 export default function Dashboard() {
+    const navigate = useNavigate();
     const [metrics, setMetrics] = useState({
         totalCustomers: 0,
         totalProducts: 0,
@@ -34,7 +36,7 @@ export default function Dashboard() {
     if (error) return <div style={{ padding: '2rem', color: 'var(--danger)' }}>Error: {error} <button onClick={fetchMetrics}>Retry</button></div>;
 
     return (
-        <div className="dashboard-container">
+        <div className="dashboard-content-view">
             <div className="header-actions" style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <h2>Business Overview</h2>
                 <button

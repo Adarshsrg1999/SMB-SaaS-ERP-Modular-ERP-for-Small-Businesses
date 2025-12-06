@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getUsers, createUser, updateUser, deleteUser } from '../api';
+import ConfirmationModal from '../components/ConfirmationModal';
 
 import '../styles/Users.css';
 
@@ -9,6 +10,9 @@ const Users = () => {
     const [error, setError] = useState('');
     const [showForm, setShowForm] = useState(false);
     const [editingUserId, setEditingUserId] = useState(null);
+    const [confirmDeleteId, setConfirmDeleteId] = useState(null); // ID or 'BULK'
+    const [selectedIds, setSelectedIds] = useState(new Set());
+
     const [formData, setFormData] = useState({
         name: '',
         email: '',
@@ -67,13 +71,51 @@ const Users = () => {
         }
     };
 
-    const handleDelete = async (id) => {
-        if (!window.confirm('Are you sure you want to delete this user?')) return;
+    // Selection Logic
+    const toggleSelectAll = () => {
+        if (selectedIds.size === users.length) {
+            setSelectedIds(new Set());
+        } else {
+            setSelectedIds(new Set(users.map(u => u.id)));
+        }
+    };
+
+    const toggleSelect = (id) => {
+        const newSelected = new Set(selectedIds);
+        if (newSelected.has(id)) {
+            newSelected.delete(id);
+        } else {
+            newSelected.add(id);
+        }
+        setSelectedIds(newSelected);
+    };
+
+    // Delete Logic
+    const handleDeleteClick = (id) => {
+        setConfirmDeleteId(id);
+    };
+
+    const handleBulkDeleteClick = () => {
+        setConfirmDeleteId('BULK');
+    };
+
+    const handleConfirmDelete = async () => {
+        if (!confirmDeleteId) return;
+
         try {
-            await deleteUser(id);
+            if (confirmDeleteId === 'BULK') {
+                // Bulk Delete
+                const idsToDelete = Array.from(selectedIds);
+                await Promise.all(idsToDelete.map(id => deleteUser(id)));
+                setSelectedIds(new Set());
+            } else {
+                // Single Delete
+                await deleteUser(confirmDeleteId);
+            }
             fetchUsers();
+            setConfirmDeleteId(null);
         } catch (err) {
-            setError(err.message);
+            setError(err.message || 'Failed to delete user(s)');
         }
     };
 
@@ -82,16 +124,35 @@ const Users = () => {
     return (
         <div className="users-container">
             <div className="users-header">
-                <h1>User Management</h1>
-                <button
-                    onClick={() => {
-                        if (showForm) resetForm();
-                        else setShowForm(true);
-                    }}
-                    className={`btn ${showForm ? 'btn-secondary' : 'btn-primary'}`}
-                >
-                    {showForm ? 'Cancel' : 'Add New User'}
-                </button>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                    <h1>User Management</h1>
+                    {selectedIds.size > 0 && (
+                        <span className="selection-count">
+                            {selectedIds.size} selected
+                        </span>
+                    )}
+                </div>
+
+                <div style={{ display: 'flex', gap: '1rem' }}>
+                    {selectedIds.size > 0 && (
+                        <button
+                            onClick={handleBulkDeleteClick}
+                            className="btn btn-delete"
+                            style={{ backgroundColor: '#fee2e2', border: '1px solid #ef4444' }}
+                        >
+                            Delete Selected ({selectedIds.size})
+                        </button>
+                    )}
+                    <button
+                        onClick={() => {
+                            if (showForm) resetForm();
+                            else setShowForm(true);
+                        }}
+                        className={`btn ${showForm ? 'btn-secondary' : 'btn-primary'}`}
+                    >
+                        {showForm ? 'Cancel' : 'Add New User'}
+                    </button>
+                </div>
             </div>
 
             {error && (
@@ -147,6 +208,7 @@ const Users = () => {
                             >
                                 <option value="staff">Staff</option>
                                 <option value="admin">Admin</option>
+                                <option value="user">User</option>
                                 <option value="customer">Customer</option>
                                 <option value="vendor">Vendor</option>
                             </select>
@@ -176,6 +238,13 @@ const Users = () => {
                 <table className="users-table">
                     <thead>
                         <tr>
+                            <th style={{ width: '40px' }}>
+                                <input
+                                    type="checkbox"
+                                    checked={users.length > 0 && selectedIds.size === users.length}
+                                    onChange={toggleSelectAll}
+                                />
+                            </th>
                             <th>Name</th>
                             <th>Email</th>
                             <th>Role</th>
@@ -186,11 +255,18 @@ const Users = () => {
                         {loading ? (
                             Array(5).fill(0).map((_, i) => (
                                 <tr key={i} className="skeleton" style={{ height: '50px' }}>
-                                    <td colSpan="4"></td>
+                                    <td colSpan="5"></td>
                                 </tr>
                             ))
                         ) : users.map((user) => (
-                            <tr key={user.id}>
+                            <tr key={user.id} className={selectedIds.has(user.id) ? 'row-selected' : ''}>
+                                <td>
+                                    <input
+                                        type="checkbox"
+                                        checked={selectedIds.has(user.id)}
+                                        onChange={() => toggleSelect(user.id)}
+                                    />
+                                </td>
                                 <td>{user.name}</td>
                                 <td>{user.email}</td>
                                 <td>
@@ -207,7 +283,7 @@ const Users = () => {
                                         Edit
                                     </button>
                                     <button
-                                        onClick={() => handleDelete(user.id)}
+                                        onClick={() => handleDeleteClick(user.id)}
                                         className="btn-delete"
                                         title="Delete User"
                                     >
@@ -219,6 +295,18 @@ const Users = () => {
                     </tbody>
                 </table>
             </div>
+
+            <ConfirmationModal
+                isOpen={!!confirmDeleteId}
+                onClose={() => setConfirmDeleteId(null)}
+                onConfirm={handleConfirmDelete}
+                title={confirmDeleteId === 'BULK' ? 'Delete Selected Users' : 'Delete User'}
+                message={confirmDeleteId === 'BULK'
+                    ? `Are you sure you want to delete ${selectedIds.size} users? This cannot be undone.`
+                    : "Are you sure you want to delete this user? This action cannot be undone."}
+                confirmText="Delete"
+                confirmColor="var(--danger)"
+            />
         </div>
     );
 };

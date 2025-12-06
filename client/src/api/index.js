@@ -91,3 +91,15 @@ export const getDashboardMetrics = async () => {
     }
     return response.json();
 };
+
+export const resetDatabase = async () => {
+    const response = await fetch('/api/dashboard/reset', {
+        method: 'POST',
+        headers: getHeaders(),
+    });
+    if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to reset database');
+    }
+    return response.json();
+};
