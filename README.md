@@ -11,23 +11,24 @@ A modular Enterprise Resource Planning (ERP) system designed for small businesse
 *   **Sales Workflow**: Create Quotations, convert to Orders, and generate Invoices.
 
 ## Tech Stack
-  ###   **Frontend (/client)**
-  *   Framework: React 19
-  *   Build Tool: Vite
-  *   Routing: React Router DOM
-  *   Testing: Vitest, React Testing Library
-  *   Language: JavaScript (ES Modules)
-  
-  ###   **Backend (/server)**
-  *   Runtime: Node.js
-  *   Framework: Express.js
-  *   Database: SQLite (sqlite3)
-  *   Authentication: JWT (jsonwebtoken) & Bcrypt
-  *   Testing: Jest & Supertest
-  
-  ###   **Root / DevOps**
-  *   Orchestration: concurrently (runs client and server simultaneously)
-  *   Package Manager: npm
+
+### **Frontend (/client)**
+*   Framework: React 19
+*   Build Tool: Vite
+*   Routing: React Router DOM
+*   Testing: Vitest, React Testing Library
+*   Language: JavaScript (ES Modules)
+
+### **Backend (/server)**
+*   Runtime: Node.js
+*   Framework: Express.js
+*   Database: SQLite (sqlite3)
+*   Authentication: JWT (jsonwebtoken) & Bcrypt
+*   Testing: Jest & Supertest
+
+### **Root / DevOps**
+*   Orchestration: concurrently (runs client and server simultaneously)
+*   Package Manager: npm
 
 ## Quick Start
 
@@ -50,7 +51,7 @@ npm run test:coverage
 ```
 
 ### 3. Run the Application
-Start both the backend and frontend concurrently:
+Start both the backend and frontend concurrently from the root directory:
 ```bash
 npm run dev
 ```
@@ -58,7 +59,7 @@ npm run dev
 *   **Frontend**: [http://localhost:5173](http://localhost:5173)
 *   **Backend**: [http://localhost:5000](http://localhost:5000)
 
-### 3. Default Login
+### 4. Default Login
 *   **Email**: `admin@erp.com`
 *   **Password**: `admin123`
 
@@ -66,8 +67,11 @@ npm run dev
 
 *   **`client/`**: React frontend with a Dashboard layout and module pages.
 *   **`server/`**: Express API with modular routes (`routes/`) and SQLite database (`erp.db`).
+*   **`server/erp.db`**: Local SQLite database file.
 
-## Database
-
-The application uses a local SQLite database (`server/erp.db`).
-To reset the database or view contents, you can use the `view_db.js` script in the server folder (needs updating) or a SQLite viewer.
+## Data and Metrics
+The **Dashboard** displays live data from the database, including:
+- **Total Customers**
+- **Sales Today & This Week**
+- **Total Products**
+- **Low Stock Alerts**: Automatically lists items where stock <= minimum level.

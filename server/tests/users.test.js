@@ -70,6 +70,32 @@ describe('User Management API (RBAC)', () => {
             expect(res.statusCode).toEqual(201);
         });
 
+        it('should allow Admin to create a new Customer user', async () => {
+            const res = await request(app)
+                .post('/api/users')
+                .set('Authorization', `Bearer ${adminToken}`)
+                .send({
+                    name: 'Test Customer',
+                    email: `customer_${Date.now()}@erp.com`,
+                    password: 'password123',
+                    role: 'customer'
+                });
+            expect(res.statusCode).toEqual(201);
+        });
+
+        it('should allow Admin to create a new Vendor user', async () => {
+            const res = await request(app)
+                .post('/api/users')
+                .set('Authorization', `Bearer ${adminToken}`)
+                .send({
+                    name: 'Test Vendor',
+                    email: `vendor_${Date.now()}@erp.com`,
+                    password: 'password123',
+                    role: 'vendor'
+                });
+            expect(res.statusCode).toEqual(201);
+        });
+
         it('should deny Staff from creating a new user', async () => {
             const res = await request(app)
                 .post('/api/users')
