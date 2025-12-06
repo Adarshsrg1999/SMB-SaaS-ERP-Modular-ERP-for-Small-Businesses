@@ -82,3 +82,7 @@ Built on a robust, modern technology stack ensuring speed and reliability:
 *   **Visual Polish**:
     *   **Theme Visibility**: Fixed text contrast issues in Dark Mode sidebar and Light Mode buttons.
     *   **Dashboard Layout**: Corrected alignment issues for a cleaner overview.
+*   **Quality Assurance**:
+    *   **Server Test Coverage**: 95.08% function coverage with comprehensive API tests.
+    *   **Client Test Coverage**: 32% coverage with API integration tests.
+
