@@ -56,6 +56,19 @@ export const createUser = async (userData) => {
     return response.json();
 };
 
+export const updateUser = async (id, userData) => {
+    const response = await fetch(`/api/users/${id}`, {
+        method: 'PUT',
+        headers: getHeaders(),
+        body: JSON.stringify(userData),
+    });
+    if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to update user');
+    }
+    return response.json();
+};
+
 export const deleteUser = async (id) => {
     const response = await fetch(`/api/users/${id}`, {
         method: 'DELETE',

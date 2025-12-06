@@ -40,6 +40,45 @@ router.post('/', (req, res) => {
     );
 });
 
+// Update a user
+router.put('/:id', (req, res) => {
+    const { name, email, role, password } = req.body;
+    const userId = req.params.id;
+
+    // Optional: prevent changing own role to something else if needed, but for now allow admins to do anything
+
+    if (password) {
+        const hashedPassword = bcrypt.hashSync(password, 10);
+        db.run("UPDATE users SET name=?, email=?, role=?, password=? WHERE id=?",
+            [name, email, role, hashedPassword, userId],
+            function (err) {
+                if (err) {
+                    if (err.message.includes('UNIQUE constraint failed')) {
+                        return res.status(400).json({ error: 'Email already exists' });
+                    }
+                    return res.status(500).json({ error: err.message });
+                }
+                if (this.changes === 0) return res.status(404).json({ error: 'User not found' });
+                res.json({ message: 'User updated successfully' });
+            }
+        );
+    } else {
+        db.run("UPDATE users SET name=?, email=?, role=? WHERE id=?",
+            [name, email, role, userId],
+            function (err) {
+                if (err) {
+                    if (err.message.includes('UNIQUE constraint failed')) {
+                        return res.status(400).json({ error: 'Email already exists' });
+                    }
+                    return res.status(500).json({ error: err.message });
+                }
+                if (this.changes === 0) return res.status(404).json({ error: 'User not found' });
+                res.json({ message: 'User updated successfully' });
+            }
+        );
+    }
+});
+
 // Delete a user
 router.delete('/:id', (req, res) => {
     const userId = req.params.id;

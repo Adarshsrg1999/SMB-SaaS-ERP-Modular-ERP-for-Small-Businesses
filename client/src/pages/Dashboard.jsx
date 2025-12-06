@@ -53,22 +53,22 @@ export default function Dashboard() {
             </div>
 
             <div className="grid">
-                <div className="card">
+                <div className="card animate-slide-up delay-100">
                     <h3>Total Sales (Today)</h3>
                     <p className="price">${metrics.salesToday.toLocaleString()}</p>
                     <span style={{ color: 'var(--success)' }}>Last 7 Days: ${metrics.salesWeek.toLocaleString()}</span>
                 </div>
-                <div className="card">
+                <div className="card animate-slide-up delay-200">
                     <h3>Total Customers</h3>
                     <p className="price">{metrics.totalCustomers}</p>
                     <span style={{ color: 'var(--text-light)' }}>Active database records</span>
                 </div>
-                <div className="card">
+                <div className="card animate-slide-up delay-300">
                     <h3>Total Products</h3>
                     <p className="price">{metrics.totalProducts}</p>
                     <span style={{ color: 'var(--text-light)' }}>Items in inventory</span>
                 </div>
-                <div className="card">
+                <div className="card animate-slide-up delay-400">
                     <h3>Low Stock Alerts</h3>
                     <p className="price" style={{ color: metrics.lowStockItems.length > 0 ? 'var(--danger)' : 'var(--success)' }}>
                         {metrics.lowStockItems.length}

@@ -1,21 +1,27 @@
 import React, { useState, useEffect } from 'react';
+import Input from '../components/ui/Input';
+import Button from '../components/ui/Button';
+import Spinner from '../components/ui/Spinner';
+import { useToast } from '../context/ToastContext';
 
 export default function Sales() {
     const [documents, setDocuments] = useState([]);
     const [customers, setCustomers] = useState([]);
     const [products, setProducts] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [showForm, setShowForm] = useState(false);
+    const [submitting, setSubmitting] = useState(false);
 
     // Simple form state for creating a document
     const [formData, setFormData] = useState({ customer_id: '', type: 'quotation', items: [] });
     const [currentItem, setCurrentItem] = useState({ product_id: '', quantity: 1 });
 
+    const { addToast } = useToast();
     const token = localStorage.getItem('token');
 
     useEffect(() => {
-        fetchDocuments();
-        fetchCustomers();
-        fetchProducts();
+        Promise.all([fetchDocuments(), fetchCustomers(), fetchProducts()])
+            .finally(() => setLoading(false));
     }, []);
 
     const fetchDocuments = async () => {
@@ -46,102 +52,159 @@ export default function Sales() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        const res = await fetch('/api/sales', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-            body: JSON.stringify(formData)
-        });
-        if (res.ok) {
-            setShowForm(false);
-            setFormData({ customer_id: '', type: 'quotation', items: [] });
-            fetchDocuments();
+        setSubmitting(true);
+        try {
+            const res = await fetch('/api/sales', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify(formData)
+            });
+            if (res.ok) {
+                addToast(`${formData.type} created successfully`, 'success');
+                setShowForm(false);
+                setFormData({ customer_id: '', type: 'quotation', items: [] });
+                fetchDocuments();
+            } else {
+                addToast('Failed to create document', 'error');
+            }
+        } catch {
+            addToast('Error submitting form', 'error');
+        } finally {
+            setSubmitting(false);
         }
     };
 
+    if (loading) return <Spinner />;
+
     return (
-        <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
+        <div className="fade-in">
+            <div className="flex justify-between items-center mb-4">
                 <h3>Sales & Orders</h3>
-                <button className="btn btn-primary" onClick={() => setShowForm(!showForm)}>
+                <Button onClick={() => setShowForm(!showForm)}>
                     {showForm ? 'Cancel' : '+ Create Document'}
-                </button>
+                </Button>
             </div>
 
             {showForm && (
-                <div className="card" style={{ marginBottom: '2rem' }}>
-                    <h4>New {formData.type}</h4>
-                    <div style={{ display: 'grid', gap: '1rem', marginBottom: '1rem' }}>
-                        <select value={formData.type} onChange={e => setFormData({ ...formData, type: e.target.value })} style={{ padding: '0.5rem' }}>
-                            <option value="quotation">Quotation</option>
-                            <option value="order">Order</option>
-                            <option value="invoice">Invoice</option>
-                        </select>
+                <div className="card mb-4 animate-slide-up">
+                    <h4 className="mb-3">New {formData.type}</h4>
+                    <div className="grid" style={{ gap: '1rem', gridTemplateColumns: '1fr' }}>
+                        <div className="grid" style={{ gridTemplateColumns: '1fr 1fr' }}>
+                            <div className="form-group">
+                                <label>Document Type</label>
+                                <select
+                                    className="form-control" // Assuming basic styling for now, ideally Reusable Select
+                                    value={formData.type}
+                                    onChange={e => setFormData({ ...formData, type: e.target.value })}
+                                    style={{ width: '100%', padding: '0.6rem', borderRadius: 'var(--radius)', border: '1px solid var(--border)', backgroundColor: 'var(--input-bg)', color: 'var(--text)' }}
+                                >
+                                    <option value="quotation">Quotation</option>
+                                    <option value="order">Order</option>
+                                    <option value="invoice">Invoice</option>
+                                </select>
+                            </div>
 
-                        <select value={formData.customer_id} onChange={e => setFormData({ ...formData, customer_id: e.target.value })} style={{ padding: '0.5rem' }}>
-                            <option value="">Select Customer</option>
-                            {customers.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                        </select>
+                            <div className="form-group">
+                                <label>Customer</label>
+                                <select
+                                    className="form-control"
+                                    value={formData.customer_id}
+                                    onChange={e => setFormData({ ...formData, customer_id: e.target.value })}
+                                    style={{ width: '100%', padding: '0.6rem', borderRadius: 'var(--radius)', border: '1px solid var(--border)', backgroundColor: 'var(--input-bg)', color: 'var(--text)' }}
+                                >
+                                    <option value="">Select Customer</option>
+                                    {customers.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                                </select>
+                            </div>
+                        </div>
 
-                        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                            <select value={currentItem.product_id} onChange={e => setCurrentItem({ ...currentItem, product_id: e.target.value })} style={{ flex: 1, padding: '0.5rem' }}>
-                                <option value="">Select Product</option>
-                                {products.map(p => <option key={p.id} value={p.id}>{p.name} (${p.price})</option>)}
-                            </select>
-                            <input type="number" min="1" value={currentItem.quantity} onChange={e => setCurrentItem({ ...currentItem, quantity: parseInt(e.target.value) })} style={{ width: '80px', padding: '0.5rem' }} />
-                            <button type="button" onClick={addItem} className="btn btn-outline">Add Item</button>
+                        <div className="card" style={{ backgroundColor: 'rgba(0,0,0,0.02)', padding: '1rem' }}>
+                            <h5 className="mb-2">Add Items</h5>
+                            <div className="flex gap-2 items-end">
+                                <div style={{ flex: 1 }}>
+                                    <label style={{ fontSize: '0.875rem' }}>Product</label>
+                                    <select
+                                        className="form-control"
+                                        value={currentItem.product_id}
+                                        onChange={e => setCurrentItem({ ...currentItem, product_id: e.target.value })}
+                                        style={{ width: '100%', padding: '0.6rem', borderRadius: 'var(--radius)', border: '1px solid var(--border)', backgroundColor: 'var(--input-bg)', color: 'var(--text)' }}
+                                    >
+                                        <option value="">Select Product</option>
+                                        {products.map(p => <option key={p.id} value={p.id}>{p.name} (${p.price})</option>)}
+                                    </select>
+                                </div>
+                                <div style={{ width: '100px' }}>
+                                    <Input
+                                        label="Qty"
+                                        type="number"
+                                        min="1"
+                                        value={currentItem.quantity}
+                                        onChange={e => setCurrentItem({ ...currentItem, quantity: parseInt(e.target.value) })}
+                                    />
+                                </div>
+                                <Button variant="outline" onClick={addItem} type="button" style={{ marginBottom: '1px' }}>Add</Button>
+                            </div>
                         </div>
 
                         {formData.items.length > 0 && (
-                            <ul style={{ listStyle: 'none', backgroundColor: 'var(--background)', padding: '0.5rem' }}>
+                            <ul style={{ listStyle: 'none', border: '1px solid var(--border)', borderRadius: 'var(--radius)', overflow: 'hidden' }}>
                                 {formData.items.map((item, idx) => (
-                                    <li key={idx} style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                    <li key={idx} className="flex justify-between p-3 border-b animate-slide-up" style={{ borderColor: 'var(--border)', backgroundColor: 'var(--surface)' }}>
                                         <span>{item.name} x {item.quantity}</span>
-                                        <span>${item.price * item.quantity}</span>
+                                        <span className="font-bold">${item.price * item.quantity}</span>
                                     </li>
                                 ))}
                             </ul>
                         )}
 
-                        <button onClick={handleSubmit} className="btn btn-primary" disabled={formData.items.length === 0 || !formData.customer_id}>
+                        <Button
+                            onClick={handleSubmit}
+                            disabled={formData.items.length === 0 || !formData.customer_id}
+                            isLoading={submitting}
+                        >
                             Create {formData.type}
-                        </button>
+                        </Button>
                     </div>
                 </div>
             )}
 
-            <div className="card">
-                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <div className="card table-container">
+                <table>
                     <thead>
-                        <tr style={{ textAlign: 'left', borderBottom: '1px solid var(--border)' }}>
-                            <th style={{ padding: '0.5rem' }}>ID</th>
-                            <th style={{ padding: '0.5rem' }}>Date</th>
-                            <th style={{ padding: '0.5rem' }}>Customer</th>
-                            <th style={{ padding: '0.5rem' }}>Type</th>
-                            <th style={{ padding: '0.5rem' }}>Status</th>
-                            <th style={{ padding: '0.5rem' }}>Total</th>
+                        <tr>
+                            <th>ID</th>
+                            <th>Date</th>
+                            <th>Customer</th>
+                            <th>Type</th>
+                            <th>Status</th>
+                            <th>Total</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        {documents.map(d => (
-                            <tr key={d.id} style={{ borderBottom: '1px solid var(--border)' }}>
-                                <td style={{ padding: '0.5rem' }}>#{d.id}</td>
-                                <td style={{ padding: '0.5rem' }}>{new Date(d.created_at).toLocaleDateString()}</td>
-                                <td style={{ padding: '0.5rem' }}>{d.customer_name}</td>
-                                <td style={{ padding: '0.5rem', textTransform: 'capitalize' }}>{d.type}</td>
-                                <td style={{ padding: '0.5rem' }}>
-                                    <span style={{
-                                        padding: '0.25rem 0.5rem',
-                                        borderRadius: '1rem',
-                                        backgroundColor: d.status === 'confirmed' ? 'var(--success)' : 'var(--secondary)',
-                                        color: 'white',
-                                        fontSize: '0.8rem'
-                                    }}>
-                                        {d.status}
-                                    </span>
-                                </td>
-                                <td style={{ padding: '0.5rem' }}>${d.total}</td>
-                            </tr>
-                        ))}
+                    <tbody className="stagger-rows">
+                        {loading ? (
+                            Array(5).fill(0).map((_, i) => (
+                                <tr key={i} className="skeleton" style={{ height: '50px' }}>
+                                    <td colSpan="6"></td>
+                                </tr>
+                            ))
+                        ) : documents.length === 0 ? (
+                            <tr className="animate-fade-in"><td colSpan="6" className="text-center">No documents found</td></tr>
+                        ) : (
+                            documents.map(d => (
+                                <tr key={d.id}>
+                                    <td>#{d.id}</td>
+                                    <td>{new Date(d.created_at).toLocaleDateString()}</td>
+                                    <td>{d.customer_name}</td>
+                                    <td style={{ textTransform: 'capitalize' }}>{d.type}</td>
+                                    <td>
+                                        <span className={`badge ${d.status === 'confirmed' ? 'badge-success' : 'badge-warning'}`}>
+                                            {d.status}
+                                        </span>
+                                    </td>
+                                    <td className="font-bold">${d.total}</td>
+                                </tr>
+                            ))
+                        )}
                     </tbody>
                 </table>
             </div>

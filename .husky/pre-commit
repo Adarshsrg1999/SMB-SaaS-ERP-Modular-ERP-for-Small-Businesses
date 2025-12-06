@@ -1,0 +1,4 @@
+# Connect stdin to TTY to enable interactive prompts
+exec < /dev/tty
+
+node scripts/validate-commit.js
