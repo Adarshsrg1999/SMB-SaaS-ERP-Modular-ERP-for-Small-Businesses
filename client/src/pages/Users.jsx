@@ -116,6 +116,8 @@ const Users = () => {
                             >
                                 <option value="staff">Staff</option>
                                 <option value="admin">Admin</option>
+                                <option value="customer">Customer</option>
+                                <option value="vendor">Vendor</option>
                             </select>
                         </div>
                         <button
@@ -145,7 +147,7 @@ const Users = () => {
                                 <td>{user.name}</td>
                                 <td>{user.email}</td>
                                 <td>
-                                    <span className={`role-badge ${user.role === 'admin' ? 'role-admin' : 'role-staff'}`}>
+                                    <span className={`role-badge role-${user.role}`}>
                                         {user.role}
                                     </span>
                                 </td>
