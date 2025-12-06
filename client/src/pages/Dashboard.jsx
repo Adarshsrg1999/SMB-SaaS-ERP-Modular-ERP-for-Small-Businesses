@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { getDashboardMetrics } from '../api';
 
 export default function Dashboard() {
-    const navigate = useNavigate();
     const [metrics, setMetrics] = useState({
         totalCustomers: 0,
         totalProducts: 0,
