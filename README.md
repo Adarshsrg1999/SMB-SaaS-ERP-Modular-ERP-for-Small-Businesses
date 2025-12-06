@@ -43,14 +43,18 @@ npm install
 ### 2. Run Tests
 To run tests with code coverage reports:
 ```bash
-# Client Coverage
+# Client Coverage (32%)
 cd client
 npm run test:coverage
 
-# Server Coverage
+# Server Coverage (95%+ functions)
 cd server
 npm run test:coverage
 ```
+
+**Current Test Coverage:**
+- Server: 95.08% function coverage, 90.78% line coverage
+- Client: 32% coverage
 
 ### 3. Run the Application
 Start both the backend and frontend concurrently from the root directory:
