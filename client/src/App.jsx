@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import DashboardLayout from './components/DashboardLayout';
@@ -9,6 +9,7 @@ import Inventory from './pages/Inventory';
 import Sales from './pages/Sales';
 import AccessDenied from './pages/AccessDenied';
 import Users from './pages/Users';
+import Admin from './pages/Admin';
 import ProtectedRoute from './components/ProtectedRoute';
 import { ThemeProvider } from './context/ThemeContext';
 import { ToastProvider } from './context/ToastContext';
@@ -37,49 +38,55 @@ function App() {
   return (
     <ThemeProvider>
       <ToastProvider>
-        <AppContent user={user} onLogin={handleLogin} onLogout={handleLogout} />
+        <Router>
+          <AppContent user={user} onLogin={handleLogin} onLogout={handleLogout} />
+        </Router>
       </ToastProvider>
     </ThemeProvider>
   );
 }
 
 function AppContent({ user, onLogin, onLogout }) {
+  const navigate = useNavigate();
   return (
-    <Router>
-      <Routes>
-        {/* Public Routes */}
-        <Route path="/login" element={!user ? <Login onLogin={onLogin} /> : <Navigate to="/" />} />
-        <Route path="/register" element={!user ? <Register onRegisterSuccess={() => { }} /> : <Navigate to="/" />} />
-        <Route path="/access-denied" element={<AccessDenied />} />
+    <Routes>
+      {/* Public Routes */}
+      <Route path="/login" element={!user ? <Login onLogin={onLogin} /> : <Navigate to="/" />} />
+      <Route path="/register" element={!user ? <Register onRegisterSuccess={() => navigate('/login')} /> : <Navigate to="/" />} />
+      <Route path="/access-denied" element={<AccessDenied />} />
 
-        {/* Protected Routes */}
-        <Route path="/" element={
-          <ProtectedRoute user={user}>
-            <DashboardLayout user={user} onLogout={onLogout}><Dashboard /></DashboardLayout>
-          </ProtectedRoute>
-        } />
-        <Route path="/customers" element={
-          <ProtectedRoute user={user}>
-            <DashboardLayout user={user} onLogout={onLogout}><Customers /></DashboardLayout>
-          </ProtectedRoute>
-        } />
-        <Route path="/inventory" element={
-          <ProtectedRoute user={user}>
-            <DashboardLayout user={user} onLogout={onLogout}><Inventory /></DashboardLayout>
-          </ProtectedRoute>
-        } />
-        <Route path="/sales" element={
-          <ProtectedRoute user={user}>
-            <DashboardLayout user={user} onLogout={onLogout}><Sales /></DashboardLayout>
-          </ProtectedRoute>
-        } />
-        <Route path="/users" element={
-          <ProtectedRoute user={user} allowedRoles={['admin']}>
-            <DashboardLayout user={user} onLogout={onLogout}><Users /></DashboardLayout>
-          </ProtectedRoute>
-        } />
-      </Routes>
-    </Router>
+      {/* Protected Routes */}
+      <Route path="/" element={
+        <ProtectedRoute user={user}>
+          <DashboardLayout user={user} onLogout={onLogout}><Dashboard /></DashboardLayout>
+        </ProtectedRoute>
+      } />
+      <Route path="/customers" element={
+        <ProtectedRoute user={user}>
+          <DashboardLayout user={user} onLogout={onLogout}><Customers /></DashboardLayout>
+        </ProtectedRoute>
+      } />
+      <Route path="/inventory" element={
+        <ProtectedRoute user={user}>
+          <DashboardLayout user={user} onLogout={onLogout}><Inventory /></DashboardLayout>
+        </ProtectedRoute>
+      } />
+      <Route path="/sales" element={
+        <ProtectedRoute user={user}>
+          <DashboardLayout user={user} onLogout={onLogout}><Sales /></DashboardLayout>
+        </ProtectedRoute>
+      } />
+      <Route path="/users" element={
+        <ProtectedRoute user={user} allowedRoles={['admin']}>
+          <DashboardLayout user={user} onLogout={onLogout}><Users /></DashboardLayout>
+        </ProtectedRoute>
+      } />
+      <Route path="/admin" element={
+        <ProtectedRoute user={user} allowedRoles={['admin']}>
+          <DashboardLayout user={user} onLogout={onLogout}><Admin /></DashboardLayout>
+        </ProtectedRoute>
+      } />
+    </Routes>
   );
 }
 

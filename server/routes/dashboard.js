@@ -1,9 +1,38 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../database');
-const { verifyToken } = require('../middleware/authMiddleware');
+const { verifyToken, authorizeRole } = require('../middleware/authMiddleware');
 
 router.use(verifyToken);
+
+router.post('/reset', authorizeRole(['admin']), (req, res) => {
+    db.serialize(() => {
+        db.run("BEGIN TRANSACTION");
+
+        try {
+            db.run("DELETE FROM customers");
+            db.run("DELETE FROM products");
+            db.run("DELETE FROM inventory_logs");
+            db.run("DELETE FROM sales_documents");
+            db.run("DELETE FROM sale_items");
+            // Delete all non-admin users. 
+            // NOTE: This preserves ALL admins. 
+            db.run("DELETE FROM users WHERE role != 'admin'");
+
+            db.run("COMMIT", (err) => {
+                if (err) {
+                    console.error('Reset transaction commit failed:', err);
+                    return res.status(500).json({ error: 'Database reset failed during commit' });
+                }
+                res.json({ message: 'Database reset successful. All data cleared except Admin accounts.' });
+            });
+        } catch (e) {
+            db.run("ROLLBACK");
+            console.error('Reset transaction error:', e);
+            res.status(500).json({ error: 'Database reset failed' });
+        }
+    });
+});
 
 router.get('/metrics', async (req, res) => {
     try {
