@@ -67,3 +67,14 @@ export const deleteUser = async (id) => {
     }
     return response.json();
 };
+
+export const getDashboardMetrics = async () => {
+    const response = await fetch('/api/dashboard/metrics', {
+        headers: getHeaders(),
+    });
+    if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to fetch dashboard metrics');
+    }
+    return response.json();
+};

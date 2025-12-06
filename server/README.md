@@ -16,6 +16,9 @@ npm start
 *   `POST /api/auth/register` - Register a new user (Admin/Staff).
 *   `POST /api/auth/login` - Login and receive JWT.
 
+### Dashboard
+*   `GET /api/dashboard/metrics` - Fetch real-time business metrics (Sales, Customers, Products, Low Stock).
+
 ### Customers
 *   `GET /api/customers` - List all customers.
 *   `POST /api/customers` - Add a new customer.
@@ -36,6 +39,6 @@ npm start
 
 *   **Users**: `id`, `name`, `email`, `password`, `role`
 *   **Customers**: `id`, `name`, `email`, `phone`, `address`, `gst`
-*   **Products**: `id`, `name`, `sku`, `price`, `stock_quantity`
+*   **Products**: `id`, `name`, `sku`, `price`, `stock_quantity`, `min_stock_level`
 *   **SalesDocuments**: `id`, `customer_id`, `type`, `status`, `total`
 *   **SaleItems**: `id`, `document_id`, `product_id`, `quantity`, `price`
