@@ -1,14 +1,16 @@
 {
-    "name": "smb-saas-erp",
-    "version": "1.0.0",
-    "description": "Root package to manage client and server",
-    "scripts": {
-        "install:all": "npm install && cd client && npm install && cd ../server && npm install",
-        "dev": "concurrently \"npm run dev --prefix server\" \"npm run dev --prefix client\"",
-        "lint": "npm run lint --prefix client && npm run lint --prefix server",
-        "test": "npm run test --prefix client && npm run test --prefix server"
-    },
-    "devDependencies": {
-        "concurrently": "^8.2.2"
-    }
+  "name": "smb-saas-erp",
+  "version": "1.0.0",
+  "description": "Root package to manage client and server",
+  "scripts": {
+    "install:all": "npm install && cd client && npm install && cd ../server && npm install",
+    "dev": "concurrently \"npm run dev --prefix server\" \"npm run dev --prefix client\"",
+    "lint": "npm run lint --prefix client && npm run lint --prefix server",
+    "test": "npm run test --prefix client && npm run test --prefix server",
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "husky": "^9.1.7"
+  }
 }

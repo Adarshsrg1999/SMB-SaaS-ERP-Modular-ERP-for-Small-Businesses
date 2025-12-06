@@ -110,6 +110,48 @@ describe('User Management API (RBAC)', () => {
         });
     });
 
+    describe('PUT /api/users/:id', () => {
+        it('should allow Admin to update a user', async () => {
+            // Create temp user
+            const tempEmail = `update_test_${Date.now()}@erp.com`;
+            const createRes = await request(app).post('/api/users').set('Authorization', `Bearer ${adminToken}`).send({
+                name: 'To Update', email: tempEmail, password: 'password123', role: 'staff'
+            });
+            const userId = createRes.body.userId;
+
+            const res = await request(app)
+                .put(`/api/users/${userId}`)
+                .set('Authorization', `Bearer ${adminToken}`)
+                .send({
+                    name: 'Updated Name',
+                    email: tempEmail,
+                    role: 'manager'
+                });
+            expect(res.statusCode).toEqual(200);
+            expect(res.body.message).toMatch(/updated/i);
+        });
+
+        it('should allow Admin to update user password', async () => {
+            // Create temp user
+            const tempEmail = `pwd_test_${Date.now()}@erp.com`;
+            const createRes = await request(app).post('/api/users').set('Authorization', `Bearer ${adminToken}`).send({
+                name: 'To Update Pwd', email: tempEmail, password: 'password123', role: 'staff'
+            });
+            const userId = createRes.body.userId;
+
+            const res = await request(app)
+                .put(`/api/users/${userId}`)
+                .set('Authorization', `Bearer ${adminToken}`)
+                .send({
+                    name: 'To Update Pwd',
+                    email: tempEmail,
+                    role: 'staff',
+                    password: 'newpassword456'
+                });
+            expect(res.statusCode).toEqual(200);
+        });
+    });
+
     describe('DELETE /api/users/:id', () => {
         it('should allow Admin to delete a user', async () => {
             // Create a temporary user to delete

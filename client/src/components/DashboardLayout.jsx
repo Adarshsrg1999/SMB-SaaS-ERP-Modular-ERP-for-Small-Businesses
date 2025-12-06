@@ -1,9 +1,14 @@
-import React from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { useTheme } from '../context/ThemeContext';
+import '../styles/layout.css';
 
 export default function DashboardLayout({ children, user, onLogout }) {
-    const navigate = useNavigate();
+    // const navigate = useNavigate(); // Unused
+
     const location = useLocation();
+    const { theme, toggleTheme } = useTheme();
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
     const menuItems = [
         { path: '/', label: 'Dashboard', icon: '📊' },
@@ -16,66 +21,85 @@ export default function DashboardLayout({ children, user, onLogout }) {
         menuItems.push({ path: '/users', label: 'Users', icon: '👤' });
     }
 
+    const currentPath = location.pathname;
+    const currentItem = menuItems.find(i => i.path === currentPath);
+    const title = currentItem?.label || 'ERP';
+
+    // Breadcrumbs Logic (Simple version for now)
+    const getBreadcrumbs = () => {
+        const parts = currentPath.split('/').filter(Boolean);
+        if (parts.length === 0) return 'Home';
+        return `Home > ${parts.map(p => p.charAt(0).toUpperCase() + p.slice(1)).join(' > ')}`;
+    };
+
     return (
-        <div style={{ display: 'flex', minHeight: '100vh' }}>
+        <div className="dashboard-container">
+            {/* Mobile Overlay */}
+            <div
+                className={`sidebar-overlay ${isSidebarOpen ? 'open' : ''}`}
+                onClick={() => setIsSidebarOpen(false)}
+            />
+
             {/* Sidebar */}
-            <aside style={{ width: '250px', backgroundColor: 'var(--accent)', color: 'white', padding: '1rem' }}>
-                <div style={{ marginBottom: '2rem', fontSize: '1.5rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <aside className={`sidebar ${isSidebarOpen ? 'open' : ''}`}>
+                <div className="sidebar-header">
                     <span>🚀</span> SMB ERP
                 </div>
 
-                <nav>
-                    <ul style={{ listStyle: 'none' }}>
-                        {menuItems.map((item) => (
-                            <li key={item.path} style={{ marginBottom: '0.5rem' }}>
-                                <Link
-                                    to={item.path}
-                                    style={{
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: '0.75rem',
-                                        padding: '0.75rem',
-                                        borderRadius: 'var(--radius)',
-                                        backgroundColor: location.pathname === item.path ? 'rgba(255,255,255,0.1)' : 'transparent',
-                                        color: 'white',
-                                        textDecoration: 'none'
-                                    }}
-                                >
-                                    <span>{item.icon}</span>
-                                    {item.label}
-                                </Link>
-                            </li>
-                        ))}
-                    </ul>
+                <nav className="nav-list">
+                    {menuItems.map((item) => (
+                        <div key={item.path} className="nav-item">
+                            <Link
+                                to={item.path}
+                                className={`nav-link ${currentPath === item.path ? 'active' : ''}`}
+                                onClick={() => setIsSidebarOpen(false)}
+                            >
+                                <span>{item.icon}</span>
+                                {item.label}
+                            </Link>
+                        </div>
+                    ))}
                 </nav>
 
-                <div style={{ marginTop: 'auto', paddingTop: '2rem', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
-                    <div style={{ marginBottom: '1rem', fontSize: '0.9rem', opacity: 0.8 }}>
-                        Logged in as: <br /> <strong>{user?.name}</strong> ({user?.role})
+                <div className="sidebar-footer">
+                    <div className="user-info">
+                        Logged in as: <strong>{user?.name}</strong>
+                        <span style={{ fontSize: '0.8em', opacity: 0.7 }}>({user?.role})</span>
                     </div>
-                    <button
-                        onClick={onLogout}
-                        style={{
-                            width: '100%',
-                            padding: '0.5rem',
-                            backgroundColor: 'rgba(255,255,255,0.1)',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: 'var(--radius)',
-                            cursor: 'pointer'
-                        }}
-                    >
+                    <button onClick={onLogout} className="btn-logout">
                         Logout
                     </button>
                 </div>
             </aside>
 
             {/* Main Content */}
-            <main style={{ flex: 1, backgroundColor: 'var(--background)', display: 'flex', flexDirection: 'column' }}>
-                <header style={{ padding: '1rem 2rem', backgroundColor: 'var(--surface)', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <h2 style={{ margin: 0 }}>{menuItems.find(i => i.path === location.pathname)?.label || 'ERP'}</h2>
+            <main className="main-content">
+                <header className="top-header">
+                    <div className="header-left">
+                        <button
+                            className="mobile-toggle"
+                            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                        >
+                            ☰
+                        </button>
+                        <div>
+                            <h2 className="page-title">{title}</h2>
+                            <div className="breadcrumbs">{getBreadcrumbs()}</div>
+                        </div>
+                    </div>
+
+                    <div className="header-right">
+                        <button onClick={toggleTheme} className="theme-toggle" title="Toggle Theme">
+                            {theme === 'dark' ? '🌙' : '☀️'}
+                        </button>
+                        <div className="cart-icon" title="Notifications">
+                            🔔
+                            {/* <span className="cart-badge">3</span> */}
+                        </div>
+                    </div>
                 </header>
-                <div style={{ padding: '2rem', flex: 1, overflowY: 'auto' }}>
+
+                <div className="content-area">
                     {children}
                 </div>
             </main>

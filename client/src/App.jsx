@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -10,21 +10,17 @@ import Sales from './pages/Sales';
 import AccessDenied from './pages/AccessDenied';
 import Users from './pages/Users';
 import ProtectedRoute from './components/ProtectedRoute';
+import { ThemeProvider } from './context/ThemeContext';
+import { ToastProvider } from './context/ToastContext';
 import './styles/index.css';
+import './styles/layout.css';
+import './styles/components.css';
 
 function App() {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    // Check for existing session
-    const token = localStorage.getItem('token');
+  const [user, setUser] = useState(() => {
     const savedUser = localStorage.getItem('user');
-    if (token && savedUser) {
-      setUser(JSON.parse(savedUser));
-    }
-    setLoading(false);
-  }, []);
+    return savedUser ? JSON.parse(savedUser) : null;
+  });
 
   const handleLogin = (userData, token) => {
     localStorage.setItem('token', token);
@@ -38,40 +34,48 @@ function App() {
     setUser(null);
   };
 
-  if (loading) return <div>Loading...</div>;
+  return (
+    <ThemeProvider>
+      <ToastProvider>
+        <AppContent user={user} onLogin={handleLogin} onLogout={handleLogout} />
+      </ToastProvider>
+    </ThemeProvider>
+  );
+}
 
+function AppContent({ user, onLogin, onLogout }) {
   return (
     <Router>
       <Routes>
         {/* Public Routes */}
-        <Route path="/login" element={!user ? <Login onLogin={handleLogin} /> : <Navigate to="/" />} />
+        <Route path="/login" element={!user ? <Login onLogin={onLogin} /> : <Navigate to="/" />} />
         <Route path="/register" element={!user ? <Register onRegisterSuccess={() => { }} /> : <Navigate to="/" />} />
         <Route path="/access-denied" element={<AccessDenied />} />
 
         {/* Protected Routes */}
         <Route path="/" element={
           <ProtectedRoute user={user}>
-            <DashboardLayout user={user} onLogout={handleLogout}><Dashboard /></DashboardLayout>
+            <DashboardLayout user={user} onLogout={onLogout}><Dashboard /></DashboardLayout>
           </ProtectedRoute>
         } />
         <Route path="/customers" element={
           <ProtectedRoute user={user}>
-            <DashboardLayout user={user} onLogout={handleLogout}><Customers /></DashboardLayout>
+            <DashboardLayout user={user} onLogout={onLogout}><Customers /></DashboardLayout>
           </ProtectedRoute>
         } />
         <Route path="/inventory" element={
           <ProtectedRoute user={user}>
-            <DashboardLayout user={user} onLogout={handleLogout}><Inventory /></DashboardLayout>
+            <DashboardLayout user={user} onLogout={onLogout}><Inventory /></DashboardLayout>
           </ProtectedRoute>
         } />
         <Route path="/sales" element={
           <ProtectedRoute user={user}>
-            <DashboardLayout user={user} onLogout={handleLogout}><Sales /></DashboardLayout>
+            <DashboardLayout user={user} onLogout={onLogout}><Sales /></DashboardLayout>
           </ProtectedRoute>
         } />
         <Route path="/users" element={
           <ProtectedRoute user={user} allowedRoles={['admin']}>
-            <DashboardLayout user={user} onLogout={handleLogout}><Users /></DashboardLayout>
+            <DashboardLayout user={user} onLogout={onLogout}><Users /></DashboardLayout>
           </ProtectedRoute>
         } />
       </Routes>

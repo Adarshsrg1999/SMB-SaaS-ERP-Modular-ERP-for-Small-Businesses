@@ -62,3 +62,13 @@ Built on a robust, modern technology stack ensuring speed and reliability:
 ---
 
 *Ready to transform your business operations? Contact your administrator to get started today.*
+
+---
+
+### Recent Updates (v1.1)
+*   **Enhanced User Management**: Admins can now **Edit** and **Delete** users directly from the dashboard.
+*   **UI/UX Overhaul**: 
+    *   **Animations**: Smooth transitions for tables, cards, and forms.
+    *   **Skeleton Loading**: Improved visual feedback during data fetching.
+    *   **Staggered Lists**: Dynamic entrances for list items.
+*   **Developer Experience**: Added `husky` git hooks for automated linting and testing.
