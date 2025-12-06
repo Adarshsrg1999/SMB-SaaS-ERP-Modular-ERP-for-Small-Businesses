@@ -141,7 +141,7 @@ export default function Customers() {
                             <th>GST</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody className={!loading && customers.length > 0 ? "stagger-rows" : ""}>
                         {loading ? (
                             Array(5).fill(0).map((_, i) => (
                                 <tr key={i} className="skeleton" style={{ height: '50px' }}>
@@ -153,16 +153,14 @@ export default function Customers() {
                                 <td colSpan="4" className="text-center">No customers found</td>
                             </tr>
                         ) : (
-                            <tbody className="stagger-rows">
-                                {customers.map(c => (
-                                    <tr key={c.id}>
-                                        <td>{c.name}</td>
-                                        <td>{c.email || '-'}</td>
-                                        <td>{c.phone || '-'}</td>
-                                        <td>{c.gst || '-'}</td>
-                                    </tr>
-                                ))}
-                            </tbody>
+                            customers.map(c => (
+                                <tr key={c.id}>
+                                    <td>{c.name}</td>
+                                    <td>{c.email || '-'}</td>
+                                    <td>{c.phone || '-'}</td>
+                                    <td>{c.gst || '-'}</td>
+                                </tr>
+                            ))
                         )}
                     </tbody>
                 </table>
