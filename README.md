@@ -5,7 +5,9 @@ A modular Enterprise Resource Planning (ERP) system designed for small businesse
 ## Features
 
 *   **Role-Based Access Control (RBAC)**: Secure login for Admins and Staff.
+*   **Admin Console**: (Beta) Dedicated administration tab with database reset and system maintenance tools.
 *   **Dashboard**: Real-time overview of sales, customers, and stock alerts.
+*   **User Management**: create, edit, and **bulk delete** (Beta) users with visual role badges.
 *   **Customer Management**: CRM module to track client details.
 *   **Inventory Management**: Product catalog with stock tracking and low-stock alerts.
 *   **Sales Workflow**: Create Quotations, convert to Orders, and generate Invoices.

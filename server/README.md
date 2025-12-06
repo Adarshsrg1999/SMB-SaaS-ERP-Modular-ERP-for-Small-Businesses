@@ -20,6 +20,7 @@ npm start
 
 ### Dashboard
 *   `GET /api/dashboard/metrics` - Fetch real-time business metrics (Sales, Customers, Products, Low Stock).
+*   `POST /api/dashboard/reset` - **(Beta - Admin Only)** Reset database (wipes business data, keeps Admin).
 
 ### Customers
 *   `GET /api/customers` - List all customers.
