@@ -2,6 +2,7 @@ const express = require('express');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const db = require('../database');
+const { sendLoginNotification } = require('../services/telegramService');
 const router = express.Router();
 
 const SECRET_KEY = process.env.SECRET_KEY || 'supersecretkey';
@@ -34,6 +35,11 @@ router.post('/login', (req, res) => {
         if (!validPassword) return res.status(400).json({ error: 'Invalid password' });
 
         const token = jwt.sign({ id: user.id, role: user.role, name: user.name }, SECRET_KEY, { expiresIn: '24h' });
+
+        // Send Telegram notification (fire-and-forget, don't block login response)
+        const ipAddress = req.headers['x-forwarded-for'] || req.socket.remoteAddress || req.ip;
+        sendLoginNotification(user.name, user.email, ipAddress);
+
         res.json({ token, user: { id: user.id, name: user.name, email: user.email, role: user.role } });
     });
 });
