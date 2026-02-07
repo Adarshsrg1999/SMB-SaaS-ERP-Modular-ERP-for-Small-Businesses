@@ -1,14 +1,20 @@
 const https = require('https');
+const notificationTemplates = require('./notificationTemplates');
 
 /**
- * Sends a login notification to Telegram
- * @param {string} username - The name of the user who logged in
- * @param {string} email - The email of the user who logged in
- * @param {string} ipAddress - The IP address from which the login occurred
+ * Sends a notification to Telegram
+ * @param {string} type - Notification type (e.g., 'LOGIN_SUCCESS', 'LOW_STOCK')
+ * @param {object} data - Data to populate the template
+ * @param {object} user - Optional user object for audit trail
  */
-function sendLoginNotification(username, email, ipAddress) {
+function sendNotification(type, data, user = null) {
     const botToken = process.env.TELEGRAM_BOT_TOKEN;
     const chatId = process.env.TELEGRAM_CHAT_ID;
+
+    // Skip if in test mode
+    if (process.env.NODE_ENV === 'test') {
+        return;
+    }
 
     // Skip if credentials are not configured
     if (!botToken || !chatId) {
@@ -16,19 +22,32 @@ function sendLoginNotification(username, email, ipAddress) {
         return;
     }
 
-    const timestamp = new Date().toLocaleString('en-IN', { 
-        timeZone: 'Asia/Kolkata',
-        dateStyle: 'medium',
-        timeStyle: 'medium'
-    });
+    // Skip if notifications are disabled
+    if (process.env.ENABLE_NOTIFICATIONS === 'false') {
+        console.log('Notifications disabled. Skipping notification.');
+        return;
+    }
 
-    const message = `🔐 *Login Alert*\n\n` +
-                   `👤 *User:* ${username}\n` +
-                   `📧 *Email:* ${email}\n` +
-                   `🕒 *Time:* ${timestamp}\n` +
-                   `🌐 *IP Address:* ${ipAddress}`;
+    // Get the template function
+    const template = notificationTemplates[type];
+    if (!template) {
+        console.error(`Unknown notification type: ${type}`);
+        return;
+    }
 
-    const data = JSON.stringify({
+    // Add timestamp if not provided
+    if (!data.timestamp) {
+        data.timestamp = new Date().toLocaleString('en-IN', {
+            timeZone: 'Asia/Kolkata',
+            dateStyle: 'medium',
+            timeStyle: 'medium'
+        });
+    }
+
+    // Generate message from template
+    const message = template(data);
+
+    const payload = JSON.stringify({
         chat_id: chatId,
         text: message,
         parse_mode: 'Markdown'
@@ -41,7 +60,7 @@ function sendLoginNotification(username, email, ipAddress) {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'Content-Length': data.length
+            'Content-Length': payload.length
         }
     };
 
@@ -54,22 +73,35 @@ function sendLoginNotification(username, email, ipAddress) {
 
         res.on('end', () => {
             if (res.statusCode === 200) {
-                console.log('Telegram notification sent successfully');
+                console.log(`✅ Telegram notification sent: ${type}`);
             } else {
-                console.error('Telegram API error:', res.statusCode, responseData);
+                console.error(`❌ Telegram API error (${type}):`, res.statusCode, responseData);
             }
         });
     });
 
     req.on('error', (error) => {
-        // Log error but don't throw - we don't want to break the login flow
-        console.error('Failed to send Telegram notification:', error.message);
+        // Log error but don't throw - we don't want to break the application flow
+        console.error(`❌ Failed to send Telegram notification (${type}):`, error.message);
     });
 
-    req.write(data);
+    req.write(payload);
     req.end();
 }
 
+/**
+ * Legacy function for backward compatibility
+ * @deprecated Use sendNotification('LOGIN_SUCCESS', data) instead
+ */
+function sendLoginNotification(username, email, ipAddress) {
+    sendNotification('LOGIN_SUCCESS', {
+        username,
+        email,
+        ipAddress
+    });
+}
+
 module.exports = {
-    sendLoginNotification
+    sendNotification,
+    sendLoginNotification // Keep for backward compatibility
 };

@@ -55,7 +55,7 @@ TELEGRAM_CHAT_ID=your_chat_id_here
 ENABLE_NOTIFICATIONS=true
 ```
 
-See [03-Telegram-Setup-Guide.md](Documentation/03-Telegram-Setup-Guide.md) for detailed setup instructions.
+See [03-Telegram-Setup-Guide.md](03-Telegram-Setup-Guide.md) for detailed setup instructions.
 
 ### 3. Run Tests
 To run tests with code coverage reports:
@@ -108,16 +108,12 @@ The system sends real-time Telegram notifications for:
 - **Sales**: New orders, large orders, quote conversions, cancellations
 - **CRM**: Customer additions and deletions
 
-See [05-Notification-Implementation-Summary.md](Documentation/05-Notification-Implementation-Summary.md) for complete details.
+See [05-Notification-Implementation-Summary.md](05-Notification-Implementation-Summary.md) for complete details.
 
 ## Documentation
 
-All project documentation is organized in the [`Documentation/`](Documentation/) folder:
-
-- [📖 Documentation Index](Documentation/00-INDEX.md) - Start here for complete documentation guide
-- [📘 Project Overview](Documentation/02-Project-Overview.md) - Comprehensive project details
-- [🔧 API Documentation](Documentation/04-API-Documentation.md) - Complete API reference
-- [📱 Telegram Setup Guide](Documentation/03-Telegram-Setup-Guide.md) - Notification setup
-- [🔔 Notification Implementation](Documentation/05-Notification-Implementation-Summary.md) - Complete notification details
-- [⚡ Notification Quick Reference](Documentation/06-Notification-Quick-Reference.md) - Quick lookup guide
+- [04-API-Documentation.md](04-API-Documentation.md) - Complete API reference with curl commands
+- [03-Telegram-Setup-Guide.md](03-Telegram-Setup-Guide.md) - How to configure Telegram notifications
+- [05-Notification-Implementation-Summary.md](05-Notification-Implementation-Summary.md) - Complete notification system details
+- [02-Project-Overview.md](02-Project-Overview.md) - Comprehensive project documentation
 

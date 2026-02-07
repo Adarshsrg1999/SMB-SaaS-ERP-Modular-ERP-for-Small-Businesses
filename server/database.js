@@ -2,7 +2,9 @@ const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 const bcrypt = require('bcrypt');
 
-const dbPath = path.resolve(__dirname, 'erp.db');
+// Use test database when NODE_ENV is 'test'
+const dbName = process.env.NODE_ENV === 'test' ? 'erp.test.db' : 'erp.db';
+const dbPath = path.resolve(__dirname, dbName);
 const db = new sqlite3.Database(dbPath);
 
 db.serialize(() => {

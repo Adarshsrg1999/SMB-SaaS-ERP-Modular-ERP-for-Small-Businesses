@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const db = require('../database');
 const { verifyToken, authorizeRole } = require('../middleware/authMiddleware');
+const { sendNotification } = require('../services/telegramService');
 
 router.use(verifyToken);
 
@@ -24,6 +25,12 @@ router.post('/reset', authorizeRole(['admin']), (req, res) => {
                     console.error('Reset transaction commit failed:', err);
                     return res.status(500).json({ error: 'Database reset failed during commit' });
                 }
+
+                // Send database reset notification
+                sendNotification('DATABASE_RESET', {
+                    performedBy: req.user.name
+                });
+
                 res.json({ message: 'Database reset successful. All data cleared except Admin accounts.' });
             });
         } catch (e) {

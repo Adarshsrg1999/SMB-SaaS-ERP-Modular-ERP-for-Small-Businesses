@@ -1,5 +1,6 @@
 const express = require('express');
 const db = require('../database');
+const { sendNotification } = require('../services/telegramService');
 const router = express.Router();
 
 // Middleware to check authentication (can be moved to a separate file)
@@ -35,6 +36,16 @@ router.post('/', (req, res) => {
         [name, email, phone, address, gst],
         function (err) {
             if (err) return res.status(500).json({ error: err.message });
+
+            // Send customer added notification
+            sendNotification('CUSTOMER_ADDED', {
+                name,
+                email,
+                phone,
+                address,
+                addedBy: req.user.name
+            });
+
             res.status(201).json({ id: this.lastID, message: 'Customer added' });
         }
     );
@@ -54,9 +65,23 @@ router.put('/:id', (req, res) => {
 
 // DELETE customer
 router.delete('/:id', (req, res) => {
-    db.run("DELETE FROM customers WHERE id=?", [req.params.id], function (err) {
+    // Get customer data before deletion for notification
+    db.get("SELECT name, email FROM customers WHERE id = ?", [req.params.id], (err, customer) => {
         if (err) return res.status(500).json({ error: err.message });
-        res.json({ message: 'Customer deleted' });
+        if (!customer) return res.status(404).json({ error: 'Customer not found' });
+
+        db.run("DELETE FROM customers WHERE id=?", [req.params.id], function (err) {
+            if (err) return res.status(500).json({ error: err.message });
+
+            // Send customer deleted notification
+            sendNotification('CUSTOMER_DELETED', {
+                name: customer.name,
+                email: customer.email,
+                deletedBy: req.user.name
+            });
+
+            res.json({ message: 'Customer deleted' });
+        });
     });
 });
 
