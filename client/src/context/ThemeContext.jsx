@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
+import { updateThemePreference } from '../api';
 
 const ThemeContext = createContext();
 
@@ -14,6 +15,15 @@ export function ThemeProvider({ children }) {
         root.classList.remove('light', 'dark');
         root.classList.add(theme);
         localStorage.setItem('theme', theme);
+
+        // PERSISTENCE (Story 31)
+        // If logged in, sync with backend
+        const token = localStorage.getItem('token');
+        if (token) {
+            updateThemePreference(theme).catch(err => {
+                console.warn('Failed to persist theme to backend:', err);
+            });
+        }
     }, [theme]);
 
     const toggleTheme = () => {
@@ -21,7 +31,7 @@ export function ThemeProvider({ children }) {
     };
 
     return (
-        <ThemeContext.Provider value={{ theme, toggleTheme }}>
+        <ThemeContext.Provider value={{ theme, setTheme, toggleTheme }}>
             {children}
         </ThemeContext.Provider>
     );

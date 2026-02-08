@@ -45,7 +45,8 @@ router.post('/login', (req, res) => {
             sendNotification('LOGIN_FAILED', {
                 email,
                 ipAddress,
-                reason: 'User not found'
+                reason: 'User not found',
+                userAgent: req.headers['user-agent']
             });
             return res.status(400).json({ error: 'User not found' });
         }
@@ -56,7 +57,8 @@ router.post('/login', (req, res) => {
             sendNotification('LOGIN_FAILED', {
                 email,
                 ipAddress,
-                reason: 'Invalid password'
+                reason: 'Invalid password',
+                userAgent: req.headers['user-agent']
             });
             return res.status(400).json({ error: 'Invalid password' });
         }
@@ -64,9 +66,23 @@ router.post('/login', (req, res) => {
         const token = jwt.sign({ id: user.id, role: user.role, name: user.name }, SECRET_KEY, { expiresIn: '24h' });
 
         // Send successful login notification (fire-and-forget, don't block login response)
-        sendLoginNotification(user.name, user.email, ipAddress);
+        sendNotification('LOGIN_SUCCESS', {
+            username: user.name,
+            email: user.email,
+            ipAddress,
+            userAgent: req.headers['user-agent']
+        });
 
-        res.json({ token, user: { id: user.id, name: user.name, email: user.email, role: user.role } });
+        res.json({
+            token,
+            user: {
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                role: user.role,
+                theme_preference: user.theme_preference
+            }
+        });
     });
 });
 

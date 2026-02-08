@@ -1,12 +1,14 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../database');
-const { verifyToken, authorizeRole } = require('../middleware/authMiddleware');
+const { authenticateToken } = require('../middleware/authMiddleware');
 const { sendNotification } = require('../services/telegramService');
+const auditService = require('../services/auditService');
 
-router.use(verifyToken);
+router.use(authenticateToken);
 
-router.post('/reset', authorizeRole(['admin']), (req, res) => {
+router.post('/reset', (req, res) => {
+    if (req.user.role !== 'admin') return res.status(403).json({ error: 'Admin access required' });
     db.serialize(() => {
         db.run("BEGIN TRANSACTION");
 
@@ -30,6 +32,16 @@ router.post('/reset', authorizeRole(['admin']), (req, res) => {
                 sendNotification('DATABASE_RESET', {
                     performedBy: req.user.name
                 });
+
+                // Log activity
+                auditService.log(
+                    req.user.id,
+                    'DELETE',
+                    'database',
+                    null,
+                    { action: 'FULL_RESET' },
+                    req.headers['x-forwarded-for'] || req.socket.remoteAddress
+                );
 
                 res.json({ message: 'Database reset successful. All data cleared except Admin accounts.' });
             });

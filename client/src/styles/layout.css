@@ -3,45 +3,32 @@
     display: flex;
     min-height: 100vh;
     background-color: var(--background);
+    overflow: hidden;
+    /* Prevent body-level horizontal scroll */
 }
 
 /* Sidebar */
 .sidebar {
-    width: 250px;
+    width: 260px;
     background-color: var(--accent);
-    color: var(--text-light);
+    color: #e2e8f0;
     display: flex;
     flex-direction: column;
     padding: 1.5rem 1rem;
-    transition: transform 0.3s ease, width 0.3s ease;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     z-index: 50;
     border-right: 1px solid var(--border);
+    flex-shrink: 0;
 }
 
 .sidebar-header {
     margin-bottom: 2rem;
     font-size: 1.5rem;
     font-weight: 800;
-    color: var(--primary-dark);
-    /* Ensure logo pops, or stick to white/primary */
+    color: white;
     display: flex;
     align-items: center;
     gap: 0.5rem;
-}
-
-/* In dark mode/accent bg, text is usually light. 
-   If --accent is dark (slate-900), text should be light.
-*/
-.sidebar {
-    /* Hardcode white text for sidebar if it's always dark-themed, 
-       OR use specific vars if sidebar changes with theme. 
-       Let's assume sidebar is always dark or uses inverted vars.
-    */
-    color: #e2e8f0;
-}
-
-.sidebar-header {
-    color: white;
 }
 
 .nav-list {
@@ -103,11 +90,11 @@
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: var(--radius);
     transition: all 0.2s;
+    cursor: pointer;
 }
 
 .btn-logout:hover {
     background-color: rgba(239, 68, 68, 0.2);
-    /* Red tint on hover */
     border-color: rgba(239, 68, 68, 0.5);
     color: #fca5a5;
 }
@@ -117,8 +104,9 @@
     flex: 1;
     display: flex;
     flex-direction: column;
-    overflow-x: hidden;
-    position: relative;
+    width: 100%;
+    min-width: 0;
+    /* Important for flex child to shrink */
     background-color: var(--background);
 }
 
@@ -175,6 +163,7 @@
     justify-content: center;
     font-size: 1.2rem;
     transition: all 0.2s;
+    cursor: pointer;
 }
 
 .theme-toggle:hover {
@@ -188,6 +177,7 @@
     padding: 2rem;
     flex: 1;
     overflow-y: auto;
+    overflow-x: hidden;
 }
 
 /* Mobile Sidebar Toggle */
@@ -195,8 +185,10 @@
     display: none;
     font-size: 1.5rem;
     color: var(--text);
-    background: none;
-    border: none;
+    background: var(--background);
+    border: 1px solid var(--border);
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--radius);
     cursor: pointer;
 }
 
@@ -205,43 +197,70 @@
     display: none;
     position: fixed;
     inset: 0;
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(2px);
     z-index: 45;
     opacity: 0;
-    transition: opacity 0.3s;
+    transition: opacity 0.3s ease;
+}
+
+.sidebar-overlay.open {
+    display: block;
+    opacity: 1;
 }
 
 /* Responsive Breakpoints */
-@media (max-width: 768px) {
-    .dashboard-container {
-        flex-direction: column;
+@media (max-width: 1024px) {
+    .sidebar {
+        width: 240px;
     }
+}
 
+@media (max-width: 768px) {
     .sidebar {
         position: fixed;
-        left: -250px;
+        left: -260px;
         top: 0;
         bottom: 0;
-        width: 250px;
-        box-shadow: 4px 0 10px rgba(0, 0, 0, 0.1);
+        width: 260px;
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        z-index: 100;
+        box-shadow: 10px 0 30px rgba(0, 0, 0, 0.3);
     }
 
     .sidebar.open {
-        transform: translateX(250px);
-    }
-
-    .sidebar-overlay.open {
-        display: block;
-        opacity: 1;
+        transform: translateX(260px);
     }
 
     .mobile-toggle {
         display: block;
-        margin-right: 0.5rem;
     }
 
     .top-header {
         padding: 0.75rem 1rem;
+    }
+
+    .content-area {
+        padding: 1.25rem;
+    }
+
+    .breadcrumbs {
+        display: none;
+    }
+
+    .page-title {
+        font-size: 1.1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .top-header {
+        flex-wrap: nowrap;
+        gap: 0.5rem;
+    }
+
+    .header-right {
+        gap: 0.5rem;
     }
 
     .content-area {

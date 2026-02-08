@@ -15,6 +15,9 @@ export default function DashboardLayout({ children, user, onLogout }) {
         { path: '/customers', label: 'Customers', icon: '👥' },
         { path: '/inventory', label: 'Inventory', icon: '📦' },
         { path: '/sales', label: 'Sales & Orders', icon: '💰' },
+        { path: '/vendors', label: 'Vendors', icon: '🏭' },
+        { path: '/purchase-orders', label: 'Purchase Orders', icon: '📋' },
+        { path: '/warehouses', label: 'Warehouses', icon: '🏢' },
     ];
 
     if (user?.role === 'admin') {

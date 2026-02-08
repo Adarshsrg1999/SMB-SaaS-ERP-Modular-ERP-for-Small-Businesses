@@ -1,13 +1,17 @@
 const express = require('express');
 const bcrypt = require('bcrypt');
 const db = require('../database');
-const { verifyToken, authorizeRole } = require('../middleware/authMiddleware');
+const { authenticateToken, checkPermission } = require('../middleware/authMiddleware');
 const { sendNotification } = require('../services/telegramService');
+const auditService = require('../services/auditService');
 const router = express.Router();
 
 // All routes in this file are protected and require 'admin' role
-router.use(verifyToken);
-router.use(authorizeRole(['admin']));
+router.use(authenticateToken);
+router.use((req, res, next) => {
+    if (req.user.role !== 'admin') return res.status(403).json({ error: 'Admin access required' });
+    next();
+});
 
 // Get all users
 router.get('/', (req, res) => {
@@ -45,6 +49,16 @@ router.post('/', (req, res) => {
                 createdBy: req.user.name
             });
 
+            // Log activity
+            auditService.log(
+                req.user.id,
+                'CREATE',
+                'user',
+                this.lastID,
+                { name, email, role },
+                req.headers['x-forwarded-for'] || req.socket.remoteAddress
+            );
+
             res.status(201).json({ message: 'User created successfully', userId: this.lastID });
         }
     );
@@ -79,6 +93,16 @@ router.put('/:id', (req, res) => {
                     changedBy: req.user.name
                 });
             }
+
+            // Log activity
+            auditService.log(
+                req.user.id,
+                'UPDATE',
+                'user',
+                userId,
+                { name, email, role, password_changed: !!password },
+                req.headers['x-forwarded-for'] || req.socket.remoteAddress
+            );
 
             res.json({ message: 'User updated successfully' });
         };
@@ -123,6 +147,16 @@ router.delete('/:id', (req, res) => {
                 role: user.role,
                 deletedBy: req.user.name
             });
+
+            // Log activity
+            auditService.log(
+                req.user.id,
+                'DELETE',
+                'user',
+                userId,
+                { name: user.name, email: user.email, role: user.role },
+                req.headers['x-forwarded-for'] || req.socket.remoteAddress
+            );
 
             res.json({ message: 'User deleted successfully' });
         });
