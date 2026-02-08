@@ -2,7 +2,10 @@ import React, { useState, useEffect } from 'react';
 import Input from '../components/ui/Input';
 import Button from '../components/ui/Button';
 import Spinner from '../components/ui/Spinner';
+import FulfillmentBadge from '../components/FulfillmentBadge';
+import FulfillmentTimeline from '../components/FulfillmentTimeline';
 import { useToast } from '../context/ToastContext';
+import { updateFulfillmentStatus } from '../api';
 
 export default function Sales() {
     const [documents, setDocuments] = useState([]);
@@ -11,6 +14,9 @@ export default function Sales() {
     const [loading, setLoading] = useState(true);
     const [showForm, setShowForm] = useState(false);
     const [submitting, setSubmitting] = useState(false);
+    const [selectedDocument, setSelectedDocument] = useState(null);
+    const [showFulfillmentModal, setShowFulfillmentModal] = useState(false);
+    const [fulfillmentData, setFulfillmentData] = useState({ status: '', tracking_number: '' });
 
     // Simple form state for creating a document
     const [formData, setFormData] = useState({ customer_id: '', type: 'quotation', items: [] });
@@ -88,8 +94,8 @@ export default function Sales() {
             {showForm && (
                 <div className="card mb-4 animate-slide-up">
                     <h4 className="mb-3">New {formData.type}</h4>
-                    <div className="grid" style={{ gap: '1rem', gridTemplateColumns: '1fr' }}>
-                        <div className="grid" style={{ gridTemplateColumns: '1fr 1fr' }}>
+                    <div className="grid">
+                        <div className="grid">
                             <div className="form-group">
                                 <label>Document Type</label>
                                 <select

@@ -4,17 +4,69 @@ Complete API reference with curl commands and Postman-ready examples for testing
 
 **Base URL:** `http://localhost:5000`
 
+**📢 Telegram Notifications:** Many endpoints trigger real-time Telegram notifications. See [Telegram Notifications](#telegram-notifications) section below.
+
 ---
 
 ## Table of Contents
 
-1. [Authentication](#authentication)
-2. [Users Management](#users-management)
-3. [Customers](#customers)
-4. [Inventory (Products)](#inventory-products)
-5. [Sales Documents](#sales-documents)
-6. [Dashboard](#dashboard)
-7. [Testing Guide](#testing-guide)
+1. [Telegram Notifications](#telegram-notifications)
+2. [Authentication](#authentication)
+3. [Users Management](#users-management)
+4. [Customers](#customers)
+5. [Inventory (Products)](#inventory-products)
+6. [Sales Documents](#sales-documents)
+7. [Dashboard](#dashboard)
+8. [Testing Guide](#testing-guide)
+
+---
+
+## Telegram Notifications
+
+The ERP system sends real-time Telegram notifications for important events. **16 notification types** are implemented:
+
+### Security Notifications (6)
+- **LOGIN_SUCCESS** - Triggered on successful login
+- **LOGIN_FAILED** - Triggered on failed login attempts
+- **USER_CREATED** - Triggered when a new user is created
+- **USER_UPDATED** - Triggered when user role changes
+- **USER_DELETED** - Triggered when a user is deleted
+- **DATABASE_RESET** - Triggered when database is reset
+
+### Inventory Notifications (4)
+- **PRODUCT_ADDED** - Triggered when a new product is added
+- **LOW_STOCK** - Triggered when stock falls below minimum level
+- **OUT_OF_STOCK** - Triggered when stock reaches zero
+- **LARGE_STOCK_ADJUSTMENT** - Triggered for stock changes above threshold (default: 50 units)
+
+### Sales Notifications (4)
+- **SALE_CREATED** - Triggered when quotation/order/invoice is created
+- **LARGE_ORDER** - Triggered for orders above threshold (default: ₹100,000)
+- **ORDER_CONVERTED** - Triggered when quotation is converted to order
+- **ORDER_CANCELLED** - Triggered when order/invoice is cancelled
+
+### CRM Notifications (2)
+- **CUSTOMER_ADDED** - Triggered when a new customer is added
+- **CUSTOMER_DELETED** - Triggered when a customer is deleted
+
+### Configuration
+
+Notifications can be configured via environment variables in `server/.env`:
+
+```env
+# Enable/disable all notifications
+ENABLE_NOTIFICATIONS=true
+
+# Notification thresholds
+LARGE_ORDER_THRESHOLD=100000              # in rupees
+LARGE_STOCK_ADJUSTMENT_THRESHOLD=50       # in units
+```
+
+### Setup
+
+See [03-Telegram-Setup-Guide.md](03-Telegram-Setup-Guide.md) for complete setup instructions.
+
+**Note:** Notifications are automatically disabled during tests (`NODE_ENV=test`).
 
 ---
 

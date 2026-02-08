@@ -6,12 +6,20 @@ This guide explains how to configure Telegram notifications for the SMB SaaS ERP
 
 ## Purpose
 
-Telegram is used to send notifications when a user logs in to the application.
+Telegram is used to send real-time notifications for important events in the ERP system.
 
+**16 Notification Types:**
+- **Security (6):** Login success/failure, user created/updated/deleted, database reset
+- **Inventory (4):** Product added, low stock, out of stock, large stock adjustments
+- **Sales (4):** Sale created, large orders, quote conversions, order cancellations
+- **CRM (2):** Customer added/deleted
+
+**Features:**
 - One-way communication (Application → Telegram)
-- Notifications only
-- No webhooks
-- No polling
+- Fire-and-forget (never blocks operations)
+- Template-based messages
+- Configurable thresholds
+- Auto-disabled in test mode
 
 ---
 
@@ -96,10 +104,20 @@ If you want notifications in a group:
    # Telegram Bot Configuration
    TELEGRAM_BOT_TOKEN=your_bot_token_here
    TELEGRAM_CHAT_ID=your_chat_id_here
+   
+   # Notification Settings
+   ENABLE_NOTIFICATIONS=true
+   
+   # Notification Thresholds
+   LARGE_ORDER_THRESHOLD=100000
+   LARGE_STOCK_ADJUSTMENT_THRESHOLD=50
    ```
 
 4. Replace `your_bot_token_here` with your actual bot token
 5. Replace `your_chat_id_here` with your actual chat ID
+6. Adjust thresholds as needed:
+   - `LARGE_ORDER_THRESHOLD`: Order amount in rupees (default: ₹100,000)
+   - `LARGE_STOCK_ADJUSTMENT_THRESHOLD`: Stock units (default: 50 units)
 
 ### Option B: Using Environment Variables Directly
 
@@ -209,27 +227,198 @@ Notification delivered to your Telegram chat
 
 ---
 
-## Notification Format
+## Notification Formats
 
-Login notifications include:
+The system sends 16 different types of notifications. Here are examples:
 
-- 🔐 Login Alert header
-- 👤 Username
-- 📧 Email address
-- 🕒 Login timestamp (in IST timezone)
-- 🌐 IP address
+### Security Notifications
 
-**Example:**
+#### 1. Login Success
 ```
 🔐 Login Alert
 
-👤 User: Test User
-📧 Email: testuser@erp.com
+👤 User: Admin User
+📧 Email: admin@erp.com
 🕒 Time: 7 Feb 2026, 9:31:36 pm
-🌐 IP Address: ::1
+🌐 IP Address: 192.168.1.100
 ```
 
-The message uses Markdown formatting for better readability in Telegram.
+#### 2. Login Failed
+```
+⚠️ Failed Login Attempt
+
+📧 Email: user@example.com
+🕒 Time: 7 Feb 2026, 10:15:30 pm
+🌐 IP Address: 192.168.1.100
+❌ Reason: Invalid password
+```
+
+#### 3. User Created
+```
+👤 New User Created
+
+📝 Name: John Doe
+📧 Email: john@example.com
+🎭 Role: staff
+👨‍💼 Created By: Admin User
+🕒 Time: 7 Feb 2026, 10:20:15 pm
+```
+
+#### 4. User Role Updated
+```
+🔄 User Role Changed
+
+👤 User: John Doe
+📧 Email: john@example.com
+🎭 Old Role: staff → New Role: admin
+👨‍💼 Changed By: Admin User
+🕒 Time: 7 Feb 2026, 10:25:30 pm
+```
+
+#### 5. User Deleted
+```
+🗑️ User Account Deleted
+
+👤 Name: John Doe
+📧 Email: john@example.com
+🎭 Role: staff
+👨‍💼 Deleted By: Admin User
+🕒 Time: 7 Feb 2026, 10:30:45 pm
+```
+
+#### 6. Database Reset
+```
+🚨 DATABASE RESET PERFORMED
+
+⚠️ All data has been cleared!
+👨‍💼 Performed By: Admin User
+🕒 Time: 7 Feb 2026, 11:00:00 pm
+```
+
+### Inventory Notifications
+
+#### 7. Product Added
+```
+📦 New Product Added
+
+📝 Name: Wireless Mouse
+🔢 SKU: MOUSE-WL-001
+💰 Price: ₹1,299
+📊 Stock: 50 units
+👨‍💼 Added By: Admin User
+🕒 Time: 7 Feb 2026, 2:15:30 pm
+```
+
+#### 8. Low Stock Alert
+```
+⚠️ Low Stock Alert
+
+📦 Product: Wireless Mouse
+🔢 SKU: MOUSE-WL-001
+📊 Current Stock: 3 units
+⚡ Minimum Level: 10 units
+🚨 Action Required: Reorder soon!
+🕒 Time: 7 Feb 2026, 3:45:20 pm
+```
+
+#### 9. Out of Stock
+```
+🚨 OUT OF STOCK ALERT
+
+📦 Product: Wireless Mouse
+🔢 SKU: MOUSE-WL-001
+❌ Stock: 0 units
+⚠️ URGENT: Reorder immediately!
+🕒 Time: 7 Feb 2026, 4:10:15 pm
+```
+
+#### 10. Large Stock Adjustment
+```
+📊 Large Stock Adjustment
+
+📦 Product: Laptop Computer
+🔢 Amount: 100 units
+📥 Type: Stock In
+📝 Reason: New shipment arrived
+👨‍💼 Adjusted By: Warehouse Manager
+🕒 Time: 7 Feb 2026, 9:00:00 am
+```
+
+### Sales Notifications
+
+#### 11. Sale Created
+```
+💰 New Sale Document Created
+
+📄 Type: Invoice
+🆔 Document ID: #INV-123
+👤 Customer: Tech Solutions Ltd
+💵 Total: ₹45,500
+📦 Items: 3 products
+👨‍💼 Created By: Sales Manager
+🕒 Time: 7 Feb 2026, 11:30:45 am
+```
+
+#### 12. Large Order
+```
+🎉 Large Order Received!
+
+📄 Document: Invoice #INV-005
+👤 Customer: Tech Solutions Ltd
+💰 Amount: ₹5,50,000
+📦 Items: 5 products
+⭐ Status: Confirmed
+🕒 Time: 7 Feb 2026, 10:20:45 pm
+```
+
+#### 13. Quote Converted to Order
+```
+✅ Quotation Converted to Order
+
+📄 Document ID: #QT-456
+👤 Customer: ABC Corporation
+💵 Amount: ₹1,25,000
+👨‍💼 Converted By: Sales Manager
+🕒 Time: 7 Feb 2026, 3:15:30 pm
+```
+
+#### 14. Order Cancelled
+```
+❌ Order Cancelled
+
+📄 Type: Invoice
+🆔 Document ID: #INV-789
+👤 Customer: XYZ Enterprises
+💵 Amount: ₹75,000
+👨‍💼 Cancelled By: Admin User
+🕒 Time: 7 Feb 2026, 5:45:20 pm
+```
+
+### CRM Notifications
+
+#### 15. Customer Added
+```
+👥 New Customer Added
+
+📝 Name: Tech Solutions Ltd
+📧 Email: contact@techsolutions.com
+📞 Phone: +91-9876543210
+📍 Address: Mumbai, Maharashtra
+👨‍💼 Added By: Sales Manager
+🕒 Time: 7 Feb 2026, 10:00:15 am
+```
+
+#### 16. Customer Deleted
+```
+🗑️ Customer Deleted
+
+📝 Name: Old Company Ltd
+📧 Email: old@company.com
+👨‍💼 Deleted By: Admin User
+🕒 Time: 7 Feb 2026, 6:30:45 pm
+```
+
+All messages use Markdown formatting for better readability in Telegram and include IST timezone timestamps.
 
 ---
 

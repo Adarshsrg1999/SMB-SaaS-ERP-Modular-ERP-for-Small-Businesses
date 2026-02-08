@@ -10,6 +10,9 @@ import Sales from './pages/Sales';
 import AccessDenied from './pages/AccessDenied';
 import Users from './pages/Users';
 import Admin from './pages/Admin';
+import Vendors from './pages/Vendors';
+import PurchaseOrders from './pages/PurchaseOrders';
+import Warehouses from './pages/Warehouses';
 import ProtectedRoute from './components/ProtectedRoute';
 import { ThemeProvider } from './context/ThemeContext';
 import { ToastProvider } from './context/ToastContext';
@@ -46,12 +49,24 @@ function App() {
   );
 }
 
+import { useTheme } from './context/ThemeContext';
+
 function AppContent({ user, onLogin, onLogout }) {
   const navigate = useNavigate();
+  const { setTheme } = useTheme();
+
+  const handleLoginSuccess = (userData, token) => {
+    // Sync theme if preference exists (Story 31)
+    if (userData.theme_preference) {
+      setTheme(userData.theme_preference);
+    }
+    onLogin(userData, token);
+  };
+
   return (
     <Routes>
       {/* Public Routes */}
-      <Route path="/login" element={!user ? <Login onLogin={onLogin} /> : <Navigate to="/" />} />
+      <Route path="/login" element={!user ? <Login onLogin={handleLoginSuccess} /> : <Navigate to="/" />} />
       <Route path="/register" element={!user ? <Register onRegisterSuccess={() => navigate('/login')} /> : <Navigate to="/" />} />
       <Route path="/access-denied" element={<AccessDenied />} />
 
@@ -84,6 +99,21 @@ function AppContent({ user, onLogin, onLogout }) {
       <Route path="/admin" element={
         <ProtectedRoute user={user} allowedRoles={['admin']}>
           <DashboardLayout user={user} onLogout={onLogout}><Admin /></DashboardLayout>
+        </ProtectedRoute>
+      } />
+      <Route path="/vendors" element={
+        <ProtectedRoute user={user}>
+          <DashboardLayout user={user} onLogout={onLogout}><Vendors /></DashboardLayout>
+        </ProtectedRoute>
+      } />
+      <Route path="/purchase-orders" element={
+        <ProtectedRoute user={user}>
+          <DashboardLayout user={user} onLogout={onLogout}><PurchaseOrders /></DashboardLayout>
+        </ProtectedRoute>
+      } />
+      <Route path="/warehouses" element={
+        <ProtectedRoute user={user}>
+          <DashboardLayout user={user} onLogout={onLogout}><Warehouses /></DashboardLayout>
         </ProtectedRoute>
       } />
     </Routes>

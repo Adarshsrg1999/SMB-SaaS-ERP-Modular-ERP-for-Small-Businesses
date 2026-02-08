@@ -90,7 +90,7 @@ export default function Customers() {
 
             {showForm && (
                 <div className="card mb-4 animate-slide-up">
-                    <form onSubmit={handleSubmit} className="grid" style={{ gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                    <form onSubmit={handleSubmit} className="grid">
                         <Input
                             label="Name *"
                             value={formData.name}

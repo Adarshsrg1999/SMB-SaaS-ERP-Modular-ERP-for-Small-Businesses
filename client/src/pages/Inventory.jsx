@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import Input from '../components/ui/Input';
 import Button from '../components/ui/Button';
 import Spinner from '../components/ui/Spinner';
+import CategorySelector from '../components/CategorySelector';
+import TagInput from '../components/TagInput';
 import { useToast } from '../context/ToastContext';
 
 export default function Inventory() {
@@ -9,7 +11,16 @@ export default function Inventory() {
     const [loading, setLoading] = useState(true);
     const [showForm, setShowForm] = useState(false);
     const [submitting, setSubmitting] = useState(false);
-    const [formData, setFormData] = useState({ name: '', sku: '', price: '', stock_quantity: '' });
+    const [formData, setFormData] = useState({
+        name: '',
+        sku: '',
+        price: '',
+        stock_quantity: '',
+        category_id: null,
+        tag_ids: []
+    });
+    const [filterCategory, setFilterCategory] = useState(null);
+    const [filterTags, setFilterTags] = useState([]);
 
     const { addToast } = useToast();
     const token = localStorage.getItem('token');
@@ -18,9 +29,20 @@ export default function Inventory() {
         fetchProducts();
     }, []);
 
+    useEffect(() => {
+        if (!loading) return;
+        fetchProducts();
+    }, [filterCategory, filterTags]);
+
     const fetchProducts = async () => {
         try {
-            const res = await fetch('/api/inventory', {
+            let url = '/api/inventory';
+            const params = [];
+            if (filterCategory) params.push(`category=${filterCategory}`);
+            if (filterTags.length > 0) params.push(`tags=${filterTags.join(',')}`);
+            if (params.length > 0) url += '?' + params.join('&');
+
+            const res = await fetch(url, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             if (res.ok) {
@@ -49,7 +71,14 @@ export default function Inventory() {
             if (res.ok) {
                 addToast('Product added successfully', 'success');
                 setShowForm(false);
-                setFormData({ name: '', sku: '', price: '', stock_quantity: '' });
+                setFormData({
+                    name: '',
+                    sku: '',
+                    price: '',
+                    stock_quantity: '',
+                    category_id: null,
+                    tag_ids: []
+                });
                 fetchProducts();
             } else {
                 addToast('Failed to add product', 'error');
@@ -72,9 +101,47 @@ export default function Inventory() {
                 </Button>
             </div>
 
+            {/* Filters */}
+            <div className="card mb-4">
+                <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))' }}>
+                    <div>
+                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>Filter by Category</label>
+                        <CategorySelector
+                            value={filterCategory}
+                            onChange={(val) => {
+                                setFilterCategory(val);
+                                setLoading(true);
+                            }}
+                        />
+                    </div>
+                    <div>
+                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>Filter by Tags</label>
+                        <TagInput
+                            value={filterTags}
+                            onChange={(val) => {
+                                setFilterTags(val);
+                                setLoading(true);
+                            }}
+                        />
+                    </div>
+                </div>
+                {(filterCategory || filterTags.length > 0) && (
+                    <Button
+                        onClick={() => {
+                            setFilterCategory(null);
+                            setFilterTags([]);
+                            setLoading(true);
+                        }}
+                        style={{ marginTop: '1rem' }}
+                    >
+                        Clear Filters
+                    </Button>
+                )}
+            </div>
+
             {showForm && (
                 <div className="card mb-4 animate-slide-up">
-                    <form onSubmit={handleSubmit} className="grid" style={{ gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                    <form onSubmit={handleSubmit} className="grid">
                         <Input
                             label="Product Name *"
                             value={formData.name}
@@ -100,6 +167,20 @@ export default function Inventory() {
                             value={formData.stock_quantity}
                             onChange={e => setFormData({ ...formData, stock_quantity: e.target.value })}
                         />
+                        <div>
+                            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>Category</label>
+                            <CategorySelector
+                                value={formData.category_id}
+                                onChange={(val) => setFormData({ ...formData, category_id: val })}
+                            />
+                        </div>
+                        <div style={{ gridColumn: '1 / -1' }}>
+                            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>Tags</label>
+                            <TagInput
+                                value={formData.tag_ids}
+                                onChange={(val) => setFormData({ ...formData, tag_ids: val })}
+                            />
+                        </div>
                         <div style={{ gridColumn: '1 / -1' }}>
                             <Button type="submit" isLoading={submitting}>
                                 Save Product
@@ -122,7 +203,31 @@ export default function Inventory() {
                     >
                         <div>
                             <h4>{p.name}</h4>
-                            <p className="text-muted" style={{ fontSize: '0.9rem' }}>SKU: {p.sku}</p>
+                            <p style={{ fontSize: '0.9rem', color: 'var(--text-light)' }}>
+                                SKU: {p.sku}
+                            </p>
+                            {p.category_name && (
+                                <p style={{ fontSize: '0.85rem', marginTop: '0.5rem' }}>
+                                    <strong>Category:</strong> {p.category_name}
+                                </p>
+                            )}
+                            {p.tags && p.tags.length > 0 && (
+                                <div style={{ marginTop: '0.5rem', display: 'flex', flexWrap: 'wrap', gap: '0.25rem' }}>
+                                    {p.tags.map(tag => (
+                                        <span
+                                            key={tag.id}
+                                            className="badge"
+                                            style={{
+                                                backgroundColor: '#3b82f6' + '20',
+                                                color: '#3b82f6',
+                                                fontSize: '0.7rem'
+                                            }}
+                                        >
+                                            {tag.name}
+                                        </span>
+                                    ))}
+                                </div>
+                            )}
                         </div>
                         <div className="flex justify-between items-center mt-3">
                             <span className="text-xl font-bold" style={{ color: 'var(--primary)' }}>${p.price}</span>
@@ -133,6 +238,6 @@ export default function Inventory() {
                     </div>
                 ))}
             </div>
-        </div>
+        </div >
     );
 }

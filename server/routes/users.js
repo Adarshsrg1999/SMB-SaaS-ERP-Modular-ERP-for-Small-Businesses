@@ -1,12 +1,17 @@
 const express = require('express');
 const bcrypt = require('bcrypt');
 const db = require('../database');
-const { verifyToken, authorizeRole } = require('../middleware/authMiddleware');
+const { authenticateToken, checkPermission } = require('../middleware/authMiddleware');
+const { sendNotification } = require('../services/telegramService');
+const auditService = require('../services/auditService');
 const router = express.Router();
 
 // All routes in this file are protected and require 'admin' role
-router.use(verifyToken);
-router.use(authorizeRole(['admin']));
+router.use(authenticateToken);
+router.use((req, res, next) => {
+    if (req.user.role !== 'admin') return res.status(403).json({ error: 'Admin access required' });
+    next();
+});
 
 // Get all users
 router.get('/', (req, res) => {
@@ -35,6 +40,25 @@ router.post('/', (req, res) => {
                 }
                 return res.status(500).json({ error: err.message });
             }
+
+            // Send user creation notification
+            sendNotification('USER_CREATED', {
+                name,
+                email,
+                role,
+                createdBy: req.user.name
+            });
+
+            // Log activity
+            auditService.log(
+                req.user.id,
+                'CREATE',
+                'user',
+                this.lastID,
+                { name, email, role },
+                req.headers['x-forwarded-for'] || req.socket.remoteAddress
+            );
+
             res.status(201).json({ message: 'User created successfully', userId: this.lastID });
         }
     );
@@ -45,38 +69,57 @@ router.put('/:id', (req, res) => {
     const { name, email, role, password } = req.body;
     const userId = req.params.id;
 
-    // Optional: prevent changing own role to something else if needed, but for now allow admins to do anything
+    // Get old user data first to detect role changes
+    db.get("SELECT name, email, role FROM users WHERE id = ?", [userId], (err, oldUser) => {
+        if (err) return res.status(500).json({ error: err.message });
+        if (!oldUser) return res.status(404).json({ error: 'User not found' });
 
-    if (password) {
-        const hashedPassword = bcrypt.hashSync(password, 10);
-        db.run("UPDATE users SET name=?, email=?, role=?, password=? WHERE id=?",
-            [name, email, role, hashedPassword, userId],
-            function (err) {
-                if (err) {
-                    if (err.message.includes('UNIQUE constraint failed')) {
-                        return res.status(400).json({ error: 'Email already exists' });
-                    }
-                    return res.status(500).json({ error: err.message });
+        const updateCallback = function (err) {
+            if (err) {
+                if (err.message.includes('UNIQUE constraint failed')) {
+                    return res.status(400).json({ error: 'Email already exists' });
                 }
-                if (this.changes === 0) return res.status(404).json({ error: 'User not found' });
-                res.json({ message: 'User updated successfully' });
+                return res.status(500).json({ error: err.message });
             }
-        );
-    } else {
-        db.run("UPDATE users SET name=?, email=?, role=? WHERE id=?",
-            [name, email, role, userId],
-            function (err) {
-                if (err) {
-                    if (err.message.includes('UNIQUE constraint failed')) {
-                        return res.status(400).json({ error: 'Email already exists' });
-                    }
-                    return res.status(500).json({ error: err.message });
-                }
-                if (this.changes === 0) return res.status(404).json({ error: 'User not found' });
-                res.json({ message: 'User updated successfully' });
+            if (this.changes === 0) return res.status(404).json({ error: 'User not found' });
+
+            // Send notification if role changed
+            if (oldUser.role !== role) {
+                sendNotification('USER_UPDATED', {
+                    name,
+                    email,
+                    oldRole: oldUser.role,
+                    newRole: role,
+                    changedBy: req.user.name
+                });
             }
-        );
-    }
+
+            // Log activity
+            auditService.log(
+                req.user.id,
+                'UPDATE',
+                'user',
+                userId,
+                { name, email, role, password_changed: !!password },
+                req.headers['x-forwarded-for'] || req.socket.remoteAddress
+            );
+
+            res.json({ message: 'User updated successfully' });
+        };
+
+        if (password) {
+            const hashedPassword = bcrypt.hashSync(password, 10);
+            db.run("UPDATE users SET name=?, email=?, role=?, password=? WHERE id=?",
+                [name, email, role, hashedPassword, userId],
+                updateCallback
+            );
+        } else {
+            db.run("UPDATE users SET name=?, email=?, role=? WHERE id=?",
+                [name, email, role, userId],
+                updateCallback
+            );
+        }
+    });
 });
 
 // Delete a user
@@ -88,10 +131,35 @@ router.delete('/:id', (req, res) => {
         return res.status(400).json({ error: 'Cannot delete your own account' });
     }
 
-    db.run("DELETE FROM users WHERE id = ?", [userId], function (err) {
+    // Get user data before deletion for notification
+    db.get("SELECT name, email, role FROM users WHERE id = ?", [userId], (err, user) => {
         if (err) return res.status(500).json({ error: err.message });
-        if (this.changes === 0) return res.status(404).json({ error: 'User not found' });
-        res.json({ message: 'User deleted successfully' });
+        if (!user) return res.status(404).json({ error: 'User not found' });
+
+        db.run("DELETE FROM users WHERE id = ?", [userId], function (err) {
+            if (err) return res.status(500).json({ error: err.message });
+            if (this.changes === 0) return res.status(404).json({ error: 'User not found' });
+
+            // Send user deletion notification
+            sendNotification('USER_DELETED', {
+                name: user.name,
+                email: user.email,
+                role: user.role,
+                deletedBy: req.user.name
+            });
+
+            // Log activity
+            auditService.log(
+                req.user.id,
+                'DELETE',
+                'user',
+                userId,
+                { name: user.name, email: user.email, role: user.role },
+                req.headers['x-forwarded-for'] || req.socket.remoteAddress
+            );
+
+            res.json({ message: 'User deleted successfully' });
+        });
     });
 });
 

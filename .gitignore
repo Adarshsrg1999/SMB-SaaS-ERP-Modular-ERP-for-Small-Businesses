@@ -7,3 +7,4 @@ coverage/
 
 # Database
 *.db
+*.test.db
