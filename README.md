@@ -1,6 +1,6 @@
 # SMB SaaS ERP
 
-A modular Enterprise Resource Planning (ERP) system designed for small businesses. This full-stack application helps manage customers, inventory, and sales workflows (Quotations, Orders, Invoices) with real-time Telegram notifications.
+A modular Enterprise Resource Planning (ERP) system designed for small businesses. This full-stack application helps manage customers, inventory, and sales workflows (Quotations, Orders, Invoices) with real time Telegram notifications.
 
 ## Features
 
