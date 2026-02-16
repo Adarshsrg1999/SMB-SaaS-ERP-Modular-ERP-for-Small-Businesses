@@ -35,6 +35,7 @@ db.serialize(() => {
         name TEXT,
         sku TEXT UNIQUE,
         price REAL,
+        cost_price REAL DEFAULT 0,
         stock_quantity INTEGER DEFAULT 0,
         min_stock_level INTEGER DEFAULT 5,
         description TEXT,
@@ -60,6 +61,8 @@ db.serialize(() => {
         type TEXT, -- 'quotation', 'order', 'invoice'
         status TEXT, -- 'pending', 'confirmed', 'completed', 'cancelled'
         total REAL,
+        cost REAL DEFAULT 0,
+        profit REAL DEFAULT 0,
         fulfillment_status TEXT DEFAULT 'pending', -- 'pending', 'packed', 'shipped', 'delivered', 'cancelled'
         packed_at DATETIME,
         shipped_at DATETIME,
@@ -218,7 +221,57 @@ db.serialize(() => {
         FOREIGN KEY(initiated_by) REFERENCES users(id)
     )`);
 
-    // 19. Role Permissions (Story 3)
+    // 19. Notifications (Story 10 - Phase 3)
+    db.run(`CREATE TABLE IF NOT EXISTS notifications (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        type TEXT NOT NULL, -- 'info', 'warning', 'success', 'error'
+        title TEXT NOT NULL,
+        message TEXT NOT NULL,
+        related_to TEXT, -- 'order', 'product', 'task', 'customer', etc.
+        related_id INTEGER,
+        is_read BOOLEAN DEFAULT 0,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY(user_id) REFERENCES users(id)
+    )`);
+
+    // Create index for faster queries
+    db.run(`CREATE INDEX IF NOT EXISTS idx_notifications_user_read 
+            ON notifications(user_id, is_read)`);
+
+    // 20. Tasks (Story 9 - Phase 3)
+    db.run(`CREATE TABLE IF NOT EXISTS tasks (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        title TEXT NOT NULL,
+        description TEXT,
+        related_to TEXT, -- 'order', 'customer', 'product', 'general'
+        related_id INTEGER,
+        priority TEXT DEFAULT 'medium', -- 'low', 'medium', 'high'
+        status TEXT DEFAULT 'pending', -- 'pending', 'in_progress', 'completed'
+        due_date DATE,
+        completed_at DATETIME,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY(user_id) REFERENCES users(id)
+    )`);
+
+    // Create index for faster task queries
+    db.run(`CREATE INDEX IF NOT EXISTS idx_tasks_user_status 
+            ON tasks(user_id, status)`);
+
+    // 21. Sales Targets (Story 8 - Phase 3)
+    db.run(`CREATE TABLE IF NOT EXISTS sales_targets (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        target_amount REAL NOT NULL,
+        period TEXT NOT NULL, -- 'daily', 'weekly', 'monthly', 'quarterly', 'yearly'
+        start_date DATE NOT NULL,
+        end_date DATE NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY(user_id) REFERENCES users(id)
+    )`);
+
+    // 20. Role Permissions (Story 3)
     db.run(`CREATE TABLE IF NOT EXISTS role_permissions (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         role TEXT NOT NULL,

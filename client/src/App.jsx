@@ -13,6 +13,11 @@ import Admin from './pages/Admin';
 import Vendors from './pages/Vendors';
 import PurchaseOrders from './pages/PurchaseOrders';
 import Warehouses from './pages/Warehouses';
+import Notifications from './pages/Notifications';
+import Tasks from './pages/Tasks';
+import Targets from './pages/Targets';
+import Analytics from './pages/Analytics';
+import Export from './pages/Export';
 import ProtectedRoute from './components/ProtectedRoute';
 import { ThemeProvider } from './context/ThemeContext';
 import { ToastProvider } from './context/ToastContext';
@@ -114,6 +119,31 @@ function AppContent({ user, onLogin, onLogout }) {
       <Route path="/warehouses" element={
         <ProtectedRoute user={user}>
           <DashboardLayout user={user} onLogout={onLogout}><Warehouses /></DashboardLayout>
+        </ProtectedRoute>
+      } />
+      <Route path="/notifications" element={
+        <ProtectedRoute user={user}>
+          <DashboardLayout user={user} onLogout={onLogout}><Notifications /></DashboardLayout>
+        </ProtectedRoute>
+      } />
+      <Route path="/tasks" element={
+        <ProtectedRoute user={user}>
+          <DashboardLayout user={user} onLogout={onLogout}><Tasks /></DashboardLayout>
+        </ProtectedRoute>
+      } />
+      <Route path="/targets" element={
+        <ProtectedRoute user={user}>
+          <DashboardLayout user={user} onLogout={onLogout}><Targets /></DashboardLayout>
+        </ProtectedRoute>
+      } />
+      <Route path="/analytics" element={
+        <ProtectedRoute user={user}>
+          <DashboardLayout user={user} onLogout={onLogout}><Analytics /></DashboardLayout>
+        </ProtectedRoute>
+      } />
+      <Route path="/export" element={
+        <ProtectedRoute user={user}>
+          <DashboardLayout user={user} onLogout={onLogout}><Export /></DashboardLayout>
         </ProtectedRoute>
       } />
     </Routes>

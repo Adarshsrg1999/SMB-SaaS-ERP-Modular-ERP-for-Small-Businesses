@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
+import NotificationBell from './NotificationBell';
 import '../styles/layout.css';
 
 export default function DashboardLayout({ children, user, onLogout }) {
@@ -18,10 +19,15 @@ export default function DashboardLayout({ children, user, onLogout }) {
         { path: '/vendors', label: 'Vendors', icon: '🏭' },
         { path: '/purchase-orders', label: 'Purchase Orders', icon: '📋' },
         { path: '/warehouses', label: 'Warehouses', icon: '🏢' },
+        { path: '/targets', label: 'My Targets', icon: '🎯' },
+        { path: '/tasks', label: 'Tasks', icon: '✅' },
+        { path: '/analytics', label: 'Analytics', icon: '📈' },
+        { path: '/notifications', label: 'Notifications', icon: '🔔' },
     ];
 
     if (user?.role === 'admin') {
         menuItems.push({ path: '/users', label: 'Users', icon: '👤' });
+        menuItems.push({ path: '/export', label: 'Export Data', icon: '💾' });
         menuItems.push({ path: '/admin', label: 'Admin', icon: '⚙️' });
     }
 
@@ -96,10 +102,7 @@ export default function DashboardLayout({ children, user, onLogout }) {
                         <button onClick={toggleTheme} className="theme-toggle" title="Toggle Theme">
                             {theme === 'dark' ? '🌙' : '☀️'}
                         </button>
-                        <div className="cart-icon" title="Notifications">
-                            🔔
-                            {/* <span className="cart-badge">3</span> */}
-                        </div>
+                        <NotificationBell />
                     </div>
                 </header>
 
