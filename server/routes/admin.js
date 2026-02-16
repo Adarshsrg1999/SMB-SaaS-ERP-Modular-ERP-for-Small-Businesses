@@ -34,12 +34,14 @@ router.get('/health', authorizeAdmin, (req, res) => {
     const usedMem = totalMem - freeMem;
 
     // DB Size
-    const dbPath = path.resolve(__dirname, '../erp.db');
+    const dbFilePath = path.resolve(__dirname, '../erp.db');
     let dbSize = 0;
+    let dbName = 'erp.db';
     try {
-        if (fs.existsSync(dbPath)) {
-            const stats = fs.statSync(dbPath);
+        if (fs.existsSync(dbFilePath)) {
+            const stats = fs.statSync(dbFilePath);
             dbSize = stats.size;
+            dbName = path.basename(dbFilePath);
         }
     } catch (e) {
         console.error('Error getting DB size:', e);
@@ -57,7 +59,8 @@ router.get('/health', authorizeAdmin, (req, res) => {
         },
         db: {
             size: Math.round(dbSize / 1024), // KB
-            path: dbName = process.env.NODE_ENV === 'test' ? 'erp.test.db' : 'erp.db'
+            path: dbFilePath,
+            name: dbName
         },
         timestamp: new Date().toISOString()
     });
