@@ -26,6 +26,11 @@ const vendorsRoutes = require('./routes/vendors');
 const purchaseOrdersRoutes = require('./routes/purchase-orders');
 const warehousesRoutes = require('./routes/warehouses');
 const transfersRoutes = require('./routes/transfers');
+const notificationsRoutes = require('./routes/notifications');
+const tasksRoutes = require('./routes/tasks');
+const targetsRoutes = require('./routes/targets');
+const analyticsRoutes = require('./routes/analytics');
+const exportRoutes = require('./routes/export');
 
 // Mount Routes
 app.use('/api/auth', authRoutes);
@@ -42,6 +47,11 @@ app.use('/api/vendors', vendorsRoutes);
 app.use('/api/purchase-orders', purchaseOrdersRoutes);
 app.use('/api/warehouses', warehousesRoutes);
 app.use('/api/transfers', transfersRoutes);
+app.use('/api/notifications', notificationsRoutes);
+app.use('/api/tasks', tasksRoutes);
+app.use('/api/targets', targetsRoutes);
+app.use('/api/analytics', analyticsRoutes);
+app.use('/api/export', exportRoutes);
 
 // Legacy/Redirect Routes
 app.get('/api/products', (req, res) => {
