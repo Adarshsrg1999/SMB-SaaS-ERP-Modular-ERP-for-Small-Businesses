@@ -6,12 +6,12 @@ A modular Enterprise Resource Planning (ERP) system designed for small businesse
 
 *   **Role-Based Access Control (RBAC)**: Secure login for Admins and Staff.
 *   **Telegram Notifications**: Real-time alerts for logins, sales, inventory, and system events (16 notification types).
-*   **Admin Console**: (Beta) Dedicated administration tab with database reset and system maintenance tools.
-*   **Dashboard**: Real-time overview of sales, customers, and stock alerts.
-*   **User Management**: create, edit, and **bulk delete** (Beta) users with visual role badges.
-*   **Customer Management**: CRM module to track client details.
-*   **Inventory Management**: Product catalog with stock tracking and low-stock alerts.
-*   **Sales Workflow**: Create Quotations, convert to Orders, and generate Invoices.
+*   **Analytics Dashboard**: Profit margin tracking, sales trends, and business performance metrics.
+*   **Staff Operations**: Task management, notification inbox, and personal sales targets.
+*   **Inventory & Warehouse**: Multi-warehouse support, product categories/tags, and fulfillment status tracking.
+*   **Sales Workflow**: Create Quotations, convert to Orders, and generate Invoices with automated profit calculation.
+*   **Data Export**: Comprehensive data export to CSV, Excel, and PDF formats.
+*   **Admin Console**: (Beta) Dedicated administration tab with system maintenance tools.
 
 ## Tech Stack
 

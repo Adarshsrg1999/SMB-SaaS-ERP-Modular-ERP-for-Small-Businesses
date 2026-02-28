@@ -31,18 +31,33 @@ export default function Sales() {
     }, []);
 
     const fetchDocuments = async () => {
-        const res = await fetch('/api/sales', { headers: { 'Authorization': `Bearer ${token}` } });
-        if (res.ok) setDocuments(await res.json());
+        try {
+            const res = await fetch('/api/sales', { headers: { 'Authorization': `Bearer ${token}` } });
+            if (res.ok) setDocuments(await res.json());
+            else addToast('Failed to load documents', 'error');
+        } catch (err) {
+            addToast('Error fetching documents', 'error');
+        }
     };
 
     const fetchCustomers = async () => {
-        const res = await fetch('/api/customers', { headers: { 'Authorization': `Bearer ${token}` } });
-        if (res.ok) setCustomers(await res.json());
+        try {
+            const res = await fetch('/api/customers', { headers: { 'Authorization': `Bearer ${token}` } });
+            if (res.ok) setCustomers(await res.json());
+            else addToast('Failed to load customers', 'error');
+        } catch (err) {
+            addToast('Error fetching customers', 'error');
+        }
     };
 
     const fetchProducts = async () => {
-        const res = await fetch('/api/inventory', { headers: { 'Authorization': `Bearer ${token}` } });
-        if (res.ok) setProducts(await res.json());
+        try {
+            const res = await fetch('/api/inventory', { headers: { 'Authorization': `Bearer ${token}` } });
+            if (res.ok) setProducts(await res.json());
+            else addToast('Failed to load products', 'error');
+        } catch (err) {
+            addToast('Error fetching products', 'error');
+        }
     };
 
     const addItem = () => {
