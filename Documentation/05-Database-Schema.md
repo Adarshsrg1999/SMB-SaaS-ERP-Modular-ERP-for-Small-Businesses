@@ -551,4 +551,4 @@ sqlite3 erp.db "PRAGMA integrity_check;"
 
 ---
 
-**Last Updated**: February 16, 2026
+**Last Updated**: February 24, 2026

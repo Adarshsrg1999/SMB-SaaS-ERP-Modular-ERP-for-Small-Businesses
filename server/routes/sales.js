@@ -27,71 +27,116 @@ router.get('/', checkPermission('sales', 'read'), (req, res) => {
 });
 
 // CREATE Document (Quote/Order)
-router.post('/', checkPermission('sales', 'write'), (req, res) => {
+router.post('/', checkPermission('sales', 'write'), async (req, res) => {
     const { customer_id, type, items } = req.body; // items: [{ product_id, quantity, price }]
     const largeOrderThreshold = parseInt(process.env.LARGE_ORDER_THRESHOLD) || 100000;
 
-    // Calculate total
-    const total = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    const status = type === 'quotation' ? 'pending' : 'confirmed';
+    console.log(`📝 Creating ${type} for customer ${customer_id} with ${items.length} items`);
 
-    db.run("INSERT INTO sales_documents (customer_id, type, status, total) VALUES (?, ?, ?, ?)",
-        [customer_id, type, status, total],
-        function (err) {
-            if (err) return res.status(500).json({ error: err.message });
-            const docId = this.lastID;
+    try {
+        // Fetch cost prices to calculate total cost and profit
+        const productIds = items.map(item => item.product_id);
+        const placeholdersProducts = productIds.map(() => '?').join(',');
 
-            // Insert Items
-            const placeholders = items.map(() => '(?, ?, ?, ?)').join(',');
-            const values = [];
+        db.all(`SELECT id, cost_price FROM products WHERE id IN (${placeholdersProducts})`, productIds, (err, products) => {
+            if (err) {
+                console.error('❌ Error fetching costs:', err.message);
+                return res.status(500).json({ error: 'Failed to fetch product costs' });
+            }
+
+            const costMap = {};
+            products.forEach(p => costMap[p.id] = p.cost_price || 0);
+
+            let total = 0;
+            let totalCost = 0;
+
             items.forEach(item => {
-                values.push(docId, item.product_id, item.quantity, item.price);
+                const price = parseFloat(item.price) || 0;
+                const qty = parseInt(item.quantity) || 0;
+                const cost = costMap[item.product_id] || 0;
+
+                total += price * qty;
+                totalCost += cost * qty;
             });
 
-            db.run(`INSERT INTO sale_items (document_id, product_id, quantity, price) VALUES ${placeholders}`, values, (err) => {
-                if (err) return res.status(500).json({ error: err.message });
+            const profit = total - totalCost;
+            const status = type === 'quotation' ? 'pending' : 'confirmed';
 
-                // Get customer name for notification
-                db.get("SELECT name FROM customers WHERE id = ?", [customer_id], (err, customer) => {
-                    const customerName = customer ? customer.name : 'Unknown Customer';
+            console.log(`💰 Totals calculated - Revenue: ${total}, Cost: ${totalCost}, Profit: ${profit}`);
 
-                    // Send sale created notification
-                    sendNotification('SALE_CREATED', {
-                        type,
-                        documentId: docId,
-                        customerName,
-                        total,
-                        itemCount: items.length,
-                        createdBy: req.user.name
+            db.run("INSERT INTO sales_documents (customer_id, type, status, total, cost, profit) VALUES (?, ?, ?, ?, ?, ?)",
+                [customer_id, type, status, total, totalCost, profit],
+                function (err) {
+                    if (err) {
+                        console.error('❌ Error inserting into sales_documents:', err.message);
+                        return res.status(500).json({ error: err.message });
+                    }
+                    const docId = this.lastID;
+                    console.log(`✅ sales_documents record created: ID ${docId}`);
+
+                    // Insert Items
+                    const placeholders = items.map(() => '(?, ?, ?, ?)').join(',');
+                    const values = [];
+                    items.forEach(item => {
+                        values.push(docId, item.product_id, item.quantity, item.price);
                     });
 
-                    // Send large order notification if threshold exceeded
-                    if (total >= largeOrderThreshold) {
-                        sendNotification('LARGE_ORDER', {
-                            type,
-                            documentId: docId,
-                            customerName,
-                            total,
-                            itemCount: items.length,
-                            status
+                    db.run(`INSERT INTO sale_items (document_id, product_id, quantity, price) VALUES ${placeholders}`, values, (err) => {
+                        if (err) {
+                            console.error('❌ Error inserting into sale_items:', err.message);
+                            return res.status(500).json({ error: err.message });
+                        }
+                        console.log(`✅ ${items.length} items inserted into sale_items`);
+
+                        // Get customer name for notification
+                        db.get("SELECT name FROM customers WHERE id = ?", [customer_id], (err, customer) => {
+                            const customerName = customer ? customer.name : 'Unknown Customer';
+
+                            // Send notifications (async, don't block response)
+                            try {
+                                sendNotification('SALE_CREATED', {
+                                    type,
+                                    documentId: docId,
+                                    customerName,
+                                    total,
+                                    itemCount: items.length,
+                                    createdBy: req.user.name
+                                });
+
+                                if (total >= largeOrderThreshold) {
+                                    sendNotification('LARGE_ORDER', {
+                                        type,
+                                        documentId: docId,
+                                        customerName,
+                                        total,
+                                        itemCount: items.length,
+                                        status
+                                    });
+                                }
+                            } catch (notifyErr) {
+                                console.error('⚠️ Notification failed:', notifyErr.message);
+                            }
                         });
-                    }
-                });
 
-                res.status(201).json({ id: docId, message: 'Document created' });
+                        res.status(201).json({ id: docId, message: 'Document created' });
 
-                // Log activity
-                auditService.log(
-                    req.user.id,
-                    'CREATE',
-                    'sale_document',
-                    docId,
-                    { type, customer_id, total, items_count: items.length },
-                    req.headers['x-forwarded-for'] || req.socket.remoteAddress
-                );
-            });
-        }
-    );
+                        // Log activity
+                        auditService.log(
+                            req.user.id,
+                            'CREATE',
+                            'sale_document',
+                            docId,
+                            { type, customer_id, total, items_count: items.length },
+                            req.headers['x-forwarded-for'] || req.socket.remoteAddress
+                        );
+                    });
+                }
+            );
+        });
+    } catch (error) {
+        console.error('❌ Critical error in sales creation:', error.message);
+        res.status(500).json({ error: 'Internal server error during sales creation' });
+    }
 });
 
 // UPDATE Status (e.g., Quote -> Order, Order -> Invoice)

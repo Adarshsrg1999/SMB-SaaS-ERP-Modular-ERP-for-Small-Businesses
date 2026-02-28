@@ -481,20 +481,21 @@ Use the complete testing workflow in [04-API-Documentation.md](04-API-Documentat
 
 ## Recent Updates
 
-### v1.3 - Telegram Notifications & Documentation (Latest)
-*   **Telegram Integration**:
-    *   Real-time login notifications via Telegram Bot API
-    *   Rich notification format with user details and timestamp
-    *   Fire-and-forget pattern for optimal performance
-    *   Graceful error handling
-*   **Documentation**:
-    *   Complete API documentation with curl/PowerShell commands
-    *   Telegram setup guide with troubleshooting
-    *   Centralized environment variable configuration
-*   **Developer Experience**:
-    *   `.env.example` template for easy setup
-    *   Comprehensive testing workflows
-    *   Postman collection guide
+### v1.4 - Analytics & Staff Efficiency (Latest - Feb 2026)
+*   **Analytics Engine**:
+    *   Automated profit margin calculations on all sales.
+    *   Interactive analytics dashboard with sales trends and performance indicators.
+*   **Data Portability**:
+    *   Bulk data export functionality to CSV, Excel, and PDF.
+    *   Standardized report generation for accounting.
+*   **Staff Operations**:
+    *   Universal Task Management system for daily operations.
+    *   In-app Notification Inbox for system alerts.
+    *   Individual Sales Target setting and tracking.
+*   **Supply Chain 2.0**:
+    *   Multi-warehouse support with per-location stock levels.
+    *   Product categorization and tagging system.
+    *   Full fulfillment workflow (Packed → Shipped → Delivered).
 
 ### v1.2 - Beta Features
 *   **Advanced Administration**:

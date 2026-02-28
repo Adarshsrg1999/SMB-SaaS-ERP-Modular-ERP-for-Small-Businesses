@@ -99,10 +99,16 @@ function sendNotification(type, data, user = null) {
         return;
     }
 
+    // Escape HTML special characters
+    const escapedMessage = message
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+
     const payload = JSON.stringify({
         chat_id: chatId,
-        text: message,
-        parse_mode: 'Markdown'
+        text: escapedMessage,
+        parse_mode: 'HTML'
     });
 
     const options = {
@@ -112,7 +118,7 @@ function sendNotification(type, data, user = null) {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'Content-Length': payload.length
+            'Content-Length': Buffer.byteLength(payload)
         }
     };
 
