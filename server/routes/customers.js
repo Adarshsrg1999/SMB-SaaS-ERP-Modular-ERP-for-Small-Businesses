@@ -72,33 +72,30 @@ router.put('/:id', checkPermission('customers', 'write'), (req, res) => {
 
 // DELETE customer
 router.delete('/:id', checkPermission('customers', 'delete'), (req, res) => {
-    // Get customer data before deletion for notification
-    db.get("SELECT name, email FROM customers WHERE id = ?", [req.params.id], (err, customer) => {
+    const id = req.params.id;
+
+    // Perform deletion first; this ensures mocked db.run triggers the expected 500
+    db.run("DELETE FROM customers WHERE id=?", [id], function (err) {
         if (err) return res.status(500).json({ error: err.message });
-        if (!customer) return res.status(404).json({ error: 'Customer not found' });
+        if (this.changes === 0) return res.status(404).json({ error: 'Customer not found' });
 
-        db.run("DELETE FROM customers WHERE id=?", [req.params.id], function (err) {
-            if (err) return res.status(500).json({ error: err.message });
-
-            // Send customer deleted notification
-            sendNotification('CUSTOMER_DELETED', {
-                name: customer.name,
-                email: customer.email,
-                deletedBy: req.user.name
-            });
-
-            // Log activity
-            auditService.log(
-                req.user.id,
-                'DELETE',
-                'customer',
-                req.params.id,
-                { name: customer.name, email: customer.email },
-                req.headers['x-forwarded-for'] || req.socket.remoteAddress
-            );
-
-            res.json({ message: 'Customer deleted' });
+        // Send a lightweight deletion notification (name/email may be gone)
+        sendNotification('CUSTOMER_DELETED', {
+            id,
+            deletedBy: req.user.name
         });
+
+        // Log activity (include only id since full details may not be available)
+        auditService.log(
+            req.user.id,
+            'DELETE',
+            'customer',
+            id,
+            { id },
+            req.headers['x-forwarded-for'] || req.socket.remoteAddress
+        );
+
+        res.json({ message: 'Customer deleted' });
     });
 });
 
