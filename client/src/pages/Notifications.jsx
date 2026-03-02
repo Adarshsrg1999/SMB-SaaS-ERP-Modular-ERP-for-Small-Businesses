@@ -22,7 +22,7 @@ export default function Notifications() {
             if (res.ok) {
                 setNotifications(await res.json());
             }
-        } catch (err) {
+        } catch {
             addToast('Failed to load notifications', 'error');
         } finally {
             setLoading(false);
@@ -38,7 +38,7 @@ export default function Notifications() {
             if (res.ok) {
                 fetchNotifications();
             }
-        } catch (err) {
+        } catch {
             addToast('Failed to mark as read', 'error');
         }
     };
@@ -53,7 +53,7 @@ export default function Notifications() {
                 addToast('All notifications marked as read', 'success');
                 fetchNotifications();
             }
-        } catch (err) {
+        } catch {
             addToast('Failed to mark all as read', 'error');
         }
     };
@@ -70,7 +70,7 @@ export default function Notifications() {
                 addToast('Notification deleted', 'success');
                 fetchNotifications();
             }
-        } catch (err) {
+        } catch {
             addToast('Failed to delete notification', 'error');
         }
     };

@@ -34,7 +34,7 @@ export default function Tasks() {
             if (res.ok) {
                 setTasks(await res.json());
             }
-        } catch (err) {
+        } catch {
             addToast('Failed to load tasks', 'error');
         } finally {
             setLoading(false);
@@ -64,7 +64,7 @@ export default function Tasks() {
                 resetForm();
                 fetchTasks();
             }
-        } catch (err) {
+        } catch {
             addToast('Failed to save task', 'error');
         }
     };
@@ -84,7 +84,7 @@ export default function Tasks() {
                 addToast('Task status updated', 'success');
                 fetchTasks();
             }
-        } catch (err) {
+        } catch {
             addToast('Failed to update status', 'error');
         }
     };
@@ -102,7 +102,7 @@ export default function Tasks() {
                 addToast('Task deleted', 'success');
                 fetchTasks();
             }
-        } catch (err) {
+        } catch {
             addToast('Failed to delete task', 'error');
         }
     };

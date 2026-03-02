@@ -28,7 +28,7 @@ export default function Export() {
             } else {
                 addToast('Export failed', 'error');
             }
-        } catch (err) {
+        } catch {
             addToast('Export failed', 'error');
         } finally {
             setExporting(false);

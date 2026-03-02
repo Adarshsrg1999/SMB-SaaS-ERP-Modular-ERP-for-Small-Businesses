@@ -17,22 +17,22 @@ export default function Vendors() {
     const { addToast } = useToast();
     const token = localStorage.getItem('token');
 
-    useEffect(() => {
-        fetchVendors();
-    }, []);
-
     const fetchVendors = async () => {
         try {
             const res = await fetch('/api/vendors', {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             if (res.ok) setVendors(await res.json());
-        } catch (err) {
+        } catch {
             addToast('Failed to load vendors', 'error');
         } finally {
             setLoading(false);
         }
     };
+
+    useEffect(() => {
+        fetchVendors();
+    }, []);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -62,7 +62,7 @@ export default function Vendors() {
                 const error = await res.json();
                 addToast(error.error || 'Failed to save vendor', 'error');
             }
-        } catch (err) {
+        } catch {
             addToast('Error saving vendor', 'error');
         }
     };
@@ -88,7 +88,7 @@ export default function Vendors() {
             } else {
                 addToast('Failed to delete vendor', 'error');
             }
-        } catch (err) {
+        } catch {
             addToast('Error deleting vendor', 'error');
         }
     };

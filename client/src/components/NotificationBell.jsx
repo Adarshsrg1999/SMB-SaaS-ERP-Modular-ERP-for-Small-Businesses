@@ -9,13 +9,6 @@ export default function NotificationBell() {
     const { addToast } = useToast();
     const token = localStorage.getItem('token');
 
-    useEffect(() => {
-        fetchUnreadCount();
-        // Poll for new notifications every 30 seconds
-        const interval = setInterval(fetchUnreadCount, 30000);
-        return () => clearInterval(interval);
-    }, []);
-
     const fetchUnreadCount = async () => {
         try {
             const res = await fetch('/api/notifications/unread-count', {
@@ -25,7 +18,7 @@ export default function NotificationBell() {
                 const data = await res.json();
                 setUnreadCount(data.count);
             }
-        } catch (err) {
+        } catch {
             console.error('Failed to fetch unread count');
         }
     };
@@ -39,10 +32,17 @@ export default function NotificationBell() {
                 const data = await res.json();
                 setNotifications(data.slice(0, 5)); // Show only 5 recent
             }
-        } catch (err) {
+        } catch {
             addToast('Failed to load notifications', 'error');
         }
     };
+
+    useEffect(() => {
+        fetchUnreadCount();
+        // Poll for new notifications every 30 seconds
+        const interval = setInterval(fetchUnreadCount, 30000);
+        return () => clearInterval(interval);
+    }, []);
 
     const handleBellClick = () => {
         if (!showDropdown) {
@@ -61,7 +61,7 @@ export default function NotificationBell() {
                 fetchUnreadCount();
                 fetchNotifications();
             }
-        } catch (err) {
+        } catch {
             console.error('Failed to mark as read');
         }
     };
@@ -77,7 +77,7 @@ export default function NotificationBell() {
                 fetchUnreadCount();
                 fetchNotifications();
             }
-        } catch (err) {
+        } catch {
             addToast('Failed to mark all as read', 'error');
         }
     };

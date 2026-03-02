@@ -22,18 +22,13 @@ export default function PurchaseOrders() {
     const { addToast } = useToast();
     const token = localStorage.getItem('token');
 
-    useEffect(() => {
-        Promise.all([fetchOrders(), fetchVendors(), fetchProducts()])
-            .finally(() => setLoading(false));
-    }, []);
-
     const fetchOrders = async () => {
         try {
             const res = await fetch('/api/purchase-orders', {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             if (res.ok) setOrders(await res.json());
-        } catch (err) {
+        } catch {
             addToast('Failed to load purchase orders', 'error');
         }
     };
@@ -44,7 +39,7 @@ export default function PurchaseOrders() {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             if (res.ok) setVendors(await res.json());
-        } catch (err) {
+        } catch {
             console.error('Failed to load vendors');
         }
     };
@@ -55,10 +50,18 @@ export default function PurchaseOrders() {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             if (res.ok) setProducts(await res.json());
-        } catch (err) {
+        } catch {
             console.error('Failed to load products');
         }
     };
+
+    useEffect(() => {
+        const loadInitialData = async () => {
+            await Promise.all([fetchOrders(), fetchVendors(), fetchProducts()]);
+            setLoading(false);
+        };
+        loadInitialData();
+    }, []);
 
     const addItem = () => {
         const product = products.find(p => p.id === parseInt(currentItem.product_id));
@@ -116,7 +119,7 @@ export default function PurchaseOrders() {
                 const error = await res.json();
                 addToast(error.error || 'Failed to create purchase order', 'error');
             }
-        } catch (err) {
+        } catch {
             addToast('Error creating purchase order', 'error');
         }
     };
@@ -138,7 +141,7 @@ export default function PurchaseOrders() {
             } else {
                 addToast('Failed to update status', 'error');
             }
-        } catch (err) {
+        } catch {
             addToast('Error updating status', 'error');
         }
     };

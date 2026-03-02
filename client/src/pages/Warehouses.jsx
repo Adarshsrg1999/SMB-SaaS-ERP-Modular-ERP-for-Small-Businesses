@@ -14,18 +14,13 @@ export default function Warehouses() {
     const { addToast } = useToast();
     const token = localStorage.getItem('token');
 
-    useEffect(() => {
-        Promise.all([fetchWarehouses(), fetchUsers()])
-            .finally(() => setLoading(false));
-    }, []);
-
     const fetchWarehouses = async () => {
         try {
             const res = await fetch('/api/warehouses', {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             if (res.ok) setWarehouses(await res.json());
-        } catch (err) {
+        } catch {
             addToast('Failed to load warehouses', 'error');
         }
     };
@@ -36,10 +31,18 @@ export default function Warehouses() {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             if (res.ok) setUsers(await res.json());
-        } catch (err) {
+        } catch {
             console.error('Failed to load users');
         }
     };
+
+    useEffect(() => {
+        const loadInitialData = async () => {
+            await Promise.all([fetchWarehouses(), fetchUsers()]);
+            setLoading(false);
+        };
+        loadInitialData();
+    }, []);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -63,7 +66,7 @@ export default function Warehouses() {
                 const error = await res.json();
                 addToast(error.error || 'Failed to create warehouse', 'error');
             }
-        } catch (err) {
+        } catch {
             addToast('Error creating warehouse', 'error');
         }
     };
