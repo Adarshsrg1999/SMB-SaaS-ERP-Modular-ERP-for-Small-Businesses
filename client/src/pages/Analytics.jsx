@@ -41,7 +41,7 @@ export default function Analytics() {
             if (productsRes.ok) {
                 setTopProducts(await productsRes.json());
             }
-        } catch (err) {
+        } catch {
             addToast('Failed to load analytics', 'error');
         } finally {
             setLoading(false);

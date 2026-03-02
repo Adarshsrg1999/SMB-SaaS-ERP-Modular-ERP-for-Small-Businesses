@@ -66,6 +66,7 @@ function AppContent({ user, onLogin, onLogout }) {
       setTheme(userData.theme_preference);
     }
     onLogin(userData, token);
+    navigate('/');
   };
 
   return (

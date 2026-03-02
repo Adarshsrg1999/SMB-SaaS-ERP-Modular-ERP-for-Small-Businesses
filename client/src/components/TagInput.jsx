@@ -6,18 +6,18 @@ export default function TagInput({ value = [], onChange }) {
     const [inputValue, setInputValue] = useState('');
     const [showSuggestions, setShowSuggestions] = useState(false);
 
-    useEffect(() => {
-        fetchTags();
-    }, []);
-
     const fetchTags = async () => {
         try {
             const data = await getTags();
             setTags(data);
-        } catch (err) {
-            console.error('Failed to load tags:', err);
+        } catch {
+            console.error('Failed to load tags');
         }
     };
+
+    useEffect(() => {
+        fetchTags();
+    }, []);
 
     const selectedTags = tags.filter(tag => value.includes(tag.id));
     const filteredSuggestions = tags.filter(tag =>

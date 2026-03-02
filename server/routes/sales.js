@@ -26,6 +26,35 @@ router.get('/', checkPermission('sales', 'read'), (req, res) => {
     });
 });
 
+// GET document details with items
+router.get('/:id', checkPermission('sales', 'read'), (req, res) => {
+    const documentId = req.params.id;
+
+    db.get(
+        `SELECT sd.*, c.name as customer_name, c.email as customer_email, c.phone as customer_phone
+         FROM sales_documents sd 
+         LEFT JOIN customers c ON sd.customer_id = c.id 
+         WHERE sd.id = ?`,
+        [documentId],
+        (err, doc) => {
+            if (err) return res.status(500).json({ error: err.message });
+            if (!doc) return res.status(404).json({ error: 'Document not found' });
+
+            db.all(
+                `SELECT si.*, p.name as product_name, p.sku as product_sku 
+                 FROM sale_items si 
+                 LEFT JOIN products p ON si.product_id = p.id 
+                 WHERE si.document_id = ?`,
+                [documentId],
+                (err, items) => {
+                    if (err) return res.status(500).json({ error: err.message });
+                    res.json({ ...doc, items });
+                }
+            );
+        }
+    );
+});
+
 // CREATE Document (Quote/Order)
 router.post('/', checkPermission('sales', 'write'), async (req, res) => {
     const { customer_id, type, items } = req.body; // items: [{ product_id, quantity, price }]
@@ -318,6 +347,34 @@ router.patch('/:id/fulfillment', checkPermission('sales', 'write'), (req, res) =
             );
         }
     );
+});
+
+// DELETE document
+router.delete('/:id', checkPermission('sales', 'delete'), (req, res) => {
+    const documentId = req.params.id;
+
+    // Get info for audit
+    db.get("SELECT type, total FROM sales_documents WHERE id = ?", [documentId], (err, doc) => {
+        if (err || !doc) return res.status(404).json({ error: 'Document not found' });
+
+        db.run("DELETE FROM sales_documents WHERE id = ?", [documentId], function (err) {
+            if (err) return res.status(500).json({ error: err.message });
+
+            // Also delete items
+            db.run("DELETE FROM sale_items WHERE document_id = ?", [documentId]);
+
+            auditService.log(
+                req.user.id,
+                'DELETE',
+                'sale_document',
+                documentId,
+                { type: doc.type, total: doc.total },
+                req.headers['x-forwarded-for'] || req.socket.remoteAddress
+            );
+
+            res.json({ message: 'Document deleted' });
+        });
+    });
 });
 
 module.exports = router;

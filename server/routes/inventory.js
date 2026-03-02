@@ -171,6 +171,44 @@ router.post('/:id/stock', checkPermission('inventory', 'write'), (req, res) => {
     });
 });
 
+// UPDATE product details
+router.put('/:id', checkPermission('inventory', 'write'), (req, res) => {
+    const productId = req.params.id;
+    const { name, sku, price, description, category_id, tag_ids } = req.body;
+
+    db.run(
+        "UPDATE products SET name = ?, sku = ?, price = ?, description = ?, category_id = ? WHERE id = ?",
+        [name, sku, price, description, category_id || null, productId],
+        function (err) {
+            if (err) return res.status(500).json({ error: err.message });
+            if (this.changes === 0) return res.status(404).json({ error: 'Product not found' });
+
+            // Update tags: Clear and re-add
+            db.run("DELETE FROM product_tags WHERE product_id = ?", [productId], (err) => {
+                if (err) console.error('Error clearing old tags:', err.message);
+
+                if (tag_ids && Array.isArray(tag_ids) && tag_ids.length > 0) {
+                    const stmt = db.prepare("INSERT INTO product_tags (product_id, tag_id) VALUES (?, ?)");
+                    tag_ids.forEach(tagId => stmt.run(productId, tagId));
+                    stmt.finalize();
+                }
+
+                // Log activity
+                auditService.log(
+                    req.user.id,
+                    'UPDATE',
+                    'product',
+                    productId,
+                    { name, sku, price, category_id, tag_ids },
+                    req.headers['x-forwarded-for'] || req.socket.remoteAddress
+                );
+
+                res.json({ message: 'Product updated' });
+            });
+        }
+    );
+});
+
 // DELETE product
 router.delete('/:id', checkPermission('inventory', 'delete'), (req, res) => {
     const productId = req.params.id;

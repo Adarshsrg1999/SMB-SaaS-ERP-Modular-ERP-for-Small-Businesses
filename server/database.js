@@ -297,15 +297,23 @@ db.serialize(() => {
         stmt.finalize();
     });
 
-    // Seed Initial Admin User if not exists
-    db.get("SELECT * FROM users WHERE email = 'admin@erp.com'", [], async (err, row) => {
-        if (!row) {
-            const hashedPassword = await bcrypt.hash('admin123', 10);
-            db.run("INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)",
-                ['Admin User', 'admin@erp.com', hashedPassword, 'admin']);
-            console.log('Default Admin user created: admin@erp.com / admin123');
-        }
-    });
+    // Seed Initial Admin User (use INSERT OR IGNORE to avoid race conditions in tests)
+    try {
+        const hashedPassword = bcrypt.hashSync('admin123', 10);
+        db.run(
+            "INSERT OR IGNORE INTO users (name, email, password, role) VALUES (?, ?, ?, ?)",
+            ['Admin User', 'admin@erp.com', hashedPassword, 'admin'],
+            function (err) {
+                if (err) {
+                    console.error('Error seeding admin user:', err.message);
+                } else if (this.changes && this.changes > 0) {
+                    console.log('Default Admin user created: admin@erp.com / admin123');
+                }
+            }
+        );
+    } catch (err) {
+        console.error('Error hashing admin password:', err.message);
+    }
 });
 
 module.exports = db;

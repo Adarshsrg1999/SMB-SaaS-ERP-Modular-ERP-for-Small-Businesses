@@ -44,7 +44,7 @@ export default function Targets() {
                 );
                 setTargets(targetsWithProgress);
             }
-        } catch (err) {
+        } catch {
             addToast('Failed to load targets', 'error');
         } finally {
             setLoading(false);
@@ -74,7 +74,7 @@ export default function Targets() {
                 resetForm();
                 fetchTargets();
             }
-        } catch (err) {
+        } catch {
             addToast('Failed to save target', 'error');
         }
     };
@@ -92,7 +92,7 @@ export default function Targets() {
                 addToast('Target deleted', 'success');
                 fetchTargets();
             }
-        } catch (err) {
+        } catch {
             addToast('Failed to delete target', 'error');
         }
     };
